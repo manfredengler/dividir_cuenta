@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="description" content="Divide cuentas grupales de forma equitativa, sin servidor." />
+  <title>Divisor de Cuentas</title>
+
+  <!-- Tipografía: Fraunces (display editorial) + Karla (cuerpo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;700&display=swap" />
+
+  <!-- Open Props: design tokens (spacing, radius, easing) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-props@1/open-props.min.css" crossorigin="anonymous" />
+  <!-- Pico.css v2: classless semantic styling con dark mode nativo -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css" crossorigin="anonymous" />
+
+  <style>
+    /* ════════════════════════════════════════
+       TEMA — paleta papel/tinta + esmeralda
+    ════════════════════════════════════════ */
+    :root {
+      --dc-fuente-display: "Fraunces", Georgia, serif;
+      --dc-fuente-cuerpo: "Karla", system-ui, sans-serif;
+    }
+
+    /* Tema claro: papel cálido */
+    [data-theme="light"], :root:not([data-theme="dark"]) {
+      --pico-background-color: #faf6ef;
+      --pico-color: #2a2520;
+      --pico-card-background-color: #fffdf8;
+      --pico-card-border-color: #e9e1d3;
+      --pico-muted-border-color: #ece4d6;
+      --pico-muted-color: #8a8174;
+      --pico-primary: #0d7a5f;
+      --pico-primary-background: #0d7a5f;
+      --pico-primary-border: #0d7a5f;
+      --pico-primary-hover: #0a614c;
+      --pico-primary-hover-background: #0a614c;
+      --pico-primary-hover-border: #0a614c;
+      --pico-primary-inverse: #fffdf8;
+      --pico-primary-focus: rgba(13, 122, 95, 0.25);
+      --pico-h1-color: #1c1814;
+      --pico-h2-color: #1c1814;
+      --dc-acento-suave: #e7f2ed;
+      --dc-rojo: #b3422f;
+      --dc-rojo-suave: #fbeae6;
+      --dc-verde: #0d7a5f;
+      --dc-sombra-card: 0 1px 2px rgba(42, 37, 32, 0.05), 0 4px 14px rgba(42, 37, 32, 0.06);
+      color-scheme: light;
+    }
+
+    /* Tema oscuro: tinta profunda */
+    [data-theme="dark"] {
+      --pico-background-color: #16140f;
+      --pico-color: #e8e2d6;
+      --pico-card-background-color: #201d17;
+      --pico-card-border-color: #322d24;
+      --pico-muted-border-color: #2e2a21;
+      --pico-muted-color: #968c7c;
+      --pico-primary: #3ecfa5;
+      --pico-primary-background: #2bb389;
+      --pico-primary-border: #2bb389;
+      --pico-primary-hover: #4adcb3;
+      --pico-primary-hover-background: #35c79b;
+      --pico-primary-hover-border: #35c79b;
+      --pico-primary-inverse: #10241d;
+      --pico-primary-focus: rgba(62, 207, 165, 0.3);
+      --pico-h1-color: #f3eee3;
+      --pico-h2-color: #f3eee3;
+      --dc-acento-suave: #1b2a24;
+      --dc-rojo: #e8765f;
+      --dc-rojo-suave: #2e1d18;
+      --dc-verde: #3ecfa5;
+      --dc-sombra-card: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.25);
+      color-scheme: dark;
+    }
+
+    /* Auto: replicar tema oscuro si el SO lo prefiere */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]):not([data-theme="dark"]) {
+        --pico-background-color: #16140f;
+        --pico-color: #e8e2d6;
+        --pico-card-background-color: #201d17;
+        --pico-card-border-color: #322d24;
+        --pico-muted-border-color: #2e2a21;
+        --pico-muted-color: #968c7c;
+        --pico-primary: #3ecfa5;
+        --pico-primary-background: #2bb389;
+        --pico-primary-border: #2bb389;
+        --pico-primary-hover: #4adcb3;
+        --pico-primary-hover-background: #35c79b;
+        --pico-primary-hover-border: #35c79b;
+        --pico-primary-inverse: #10241d;
+        --pico-primary-focus: rgba(62, 207, 165, 0.3);
+        --pico-h1-color: #f3eee3;
+        --pico-h2-color: #f3eee3;
+        --dc-acento-suave: #1b2a24;
+        --dc-rojo: #e8765f;
+        --dc-rojo-suave: #2e1d18;
+        --dc-verde: #3ecfa5;
+        --dc-sombra-card: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.25);
+        color-scheme: dark;
+      }
+    }
+
+    /* ════════════════════════════════════════
+       BASE
+    ════════════════════════════════════════ */
+    [x-cloak] { display: none !important; }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    body {
+      font-family: var(--dc-fuente-cuerpo);
+      padding-bottom: var(--size-10);
+      transition: background-color 0.3s var(--ease-3), color 0.3s var(--ease-3);
+    }
+
+    h1, h2, h3 { font-family: var(--dc-fuente-display); letter-spacing: -0.01em; }
+
+    main > section {
+      margin-top: var(--size-7);
+      animation: dc-entrada 0.5s var(--ease-out-3) backwards;
+    }
+    main > section:nth-of-type(1) { animation-delay: 0.05s; }
+    main > section:nth-of-type(2) { animation-delay: 0.10s; }
+    main > section:nth-of-type(3) { animation-delay: 0.15s; }
+    main > section:nth-of-type(4) { animation-delay: 0.20s; }
+
+    @keyframes dc-entrada {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+
+    /* Título de sección con numeración editorial */
+    section > h2 {
+      font-size: var(--font-size-4);
+      margin-bottom: var(--size-4);
+      display: flex;
+      align-items: baseline;
+      gap: var(--size-2);
+    }
+    section > h2::before {
+      counter-increment: seccion;
+      content: counter(seccion, decimal-leading-zero);
+      font-size: var(--font-size-0);
+      font-family: var(--dc-fuente-cuerpo);
+      font-weight: 700;
+      color: var(--pico-primary);
+      letter-spacing: 0.1em;
+    }
+    main { counter-reset: seccion; }
+
+    /* ════════════════════════════════════════
+       HEADER
+    ════════════════════════════════════════ */
+    body > header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: color-mix(in srgb, var(--pico-background-color) 85%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--pico-muted-border-color);
+      padding-top: var(--size-2);
+      padding-bottom: var(--size-2);
+      margin-bottom: 0;
+    }
+
+    .marca {
+      display: flex;
+      align-items: center;
+      gap: var(--size-2);
+      font-family: var(--dc-fuente-display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--pico-h1-color);
+    }
+    .marca-logo {
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-2);
+      background: var(--pico-primary);
+      color: var(--pico-primary-inverse);
+      font-size: 1.2rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    header nav { flex-wrap: wrap; gap: var(--size-2); }
+    header nav ul { align-items: center; gap: var(--size-2); }
+    header nav ul li { padding: 0; }
+    header nav select {
+      margin: 0;
+      padding: var(--size-1) var(--size-5) var(--size-1) var(--size-2);
+      font-size: var(--font-size-0);
+      width: auto;
+      border-radius: var(--radius-2);
+    }
+    header nav label {
+      display: flex; align-items: center; gap: var(--size-1);
+      font-size: var(--font-size-0); margin: 0; cursor: pointer;
+      white-space: nowrap;
+    }
+    header nav input[type="checkbox"] { margin: 0; }
+    header nav button {
+      margin: 0;
+      padding: var(--size-1) var(--size-3);
+      font-size: var(--font-size-0);
+      border-radius: var(--radius-2);
+    }
+
+    .btn-tema {
+      background: transparent;
+      border: 1px solid var(--pico-muted-border-color);
+      color: var(--pico-color);
+      width: 2.2rem;
+      height: 2.2rem;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: 1rem;
+      border-radius: var(--radius-round);
+      box-shadow: none;
+      transition: border-color 0.2s var(--ease-3), transform 0.2s var(--ease-3);
+    }
+    .btn-tema:hover { border-color: var(--pico-primary); transform: rotate(15deg); }
+
+    /* ════════════════════════════════════════
+       HERO
+    ════════════════════════════════════════ */
+    .hero {
+      padding-top: var(--size-8);
+      text-align: left;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin-bottom: var(--size-2);
+      line-height: 1.1;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--pico-primary);
+    }
+    .hero p {
+      color: var(--pico-muted-color);
+      max-width: 48ch;
+      margin-bottom: 0;
+    }
+
+    /* ════════════════════════════════════════
+       FORMULARIOS
+    ════════════════════════════════════════ */
+    .form-inline {
+      display: flex; gap: var(--size-3);
+      align-items: flex-end; flex-wrap: wrap;
+    }
+    .form-inline > div { flex: 1; min-width: 110px; }
+    .form-inline > div.flex-2 { flex: 2; }
+    .form-inline label {
+      font-size: var(--font-size-0);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .form-inline input { margin-bottom: 0; }
+    .form-inline button { margin-bottom: 0; white-space: nowrap; }
+
+    input, select { transition: border-color 0.2s var(--ease-3); }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--size-3);
+    }
+    @media (max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ════════════════════════════════════════
+       PERSONAS
+    ════════════════════════════════════════ */
+    .persona-row {
+      display: flex; align-items: center; gap: var(--size-3);
+      padding: var(--size-2) var(--size-3);
+      border-radius: var(--radius-2);
+      transition: background 0.15s var(--ease-3);
+    }
+    .persona-row:hover { background: var(--dc-acento-suave); }
+    .persona-avatar {
+      display: grid; place-items: center;
+      width: 2rem; height: 2rem;
+      border-radius: var(--radius-round);
+      background: var(--dc-acento-suave);
+      color: var(--pico-primary);
+      font-weight: 700;
+      font-size: var(--font-size-0);
+      flex-shrink: 0;
+      border: 1px solid color-mix(in srgb, var(--pico-primary) 25%, transparent);
+    }
+    .persona-row:hover .persona-avatar { background: var(--pico-card-background-color); }
+    .persona-nombre { flex: 1; font-weight: 700; }
+    .persona-pagado {
+      display: flex; align-items: center; gap: var(--size-2);
+      font-size: var(--font-size-0);
+    }
+    .persona-pagado label { margin: 0; white-space: nowrap; color: var(--pico-muted-color); }
+    .persona-pagado input { margin: 0; max-width: 110px; padding: var(--size-1) var(--size-2); height: auto; }
+
+    /* ════════════════════════════════════════
+       BOTONES SECUNDARIOS
+    ════════════════════════════════════════ */
+    .btn-del {
+      background: transparent; border: none;
+      color: var(--pico-muted-color);
+      cursor: pointer;
+      padding: var(--size-1) var(--size-2);
+      font-size: 1.15rem; line-height: 1;
+      box-shadow: none;
+      border-radius: var(--radius-2);
+      transition: color 0.15s var(--ease-3), background 0.15s var(--ease-3);
+      margin: 0;
+    }
+    .btn-del:hover { color: var(--dc-rojo); background: var(--dc-rojo-suave); }
+
+    .btn-pagador {
+      background: transparent; border: 1px solid transparent;
+      color: var(--pico-muted-color);
+      cursor: pointer;
+      padding: var(--size-1) var(--size-2);
+      font-size: 1rem; line-height: 1;
+      box-shadow: none;
+      border-radius: var(--radius-2);
+      transition: all 0.15s var(--ease-3);
+      margin: 0;
+      filter: grayscale(1);
+      opacity: 0.55;
+    }
+    .btn-pagador:hover { opacity: 1; filter: none; }
+    .btn-pagador[aria-pressed="true"] {
+      filter: none; opacity: 1;
+      background: var(--dc-acento-suave);
+      border-color: color-mix(in srgb, var(--pico-primary) 35%, transparent);
+    }
+
+    .badge-pagador {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--pico-primary);
+      background: var(--dc-acento-suave);
+      padding: 2px var(--size-2);
+      border-radius: var(--radius-round);
+      white-space: nowrap;
+    }
+
+    /* ── División por partes / % ── */
+    .modo-select {
+      width: auto; margin: 0;
+      padding: 2px var(--size-5) 2px var(--size-2);
+      font-size: var(--font-size-0);
+      height: auto;
+      border-radius: var(--radius-2);
+    }
+    .split-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--size-2);
+      margin-top: var(--size-2);
+    }
+    .split-row {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: var(--size-2);
+      font-size: var(--font-size-0); margin: 0;
+      font-weight: 700;
+    }
+    .split-row input {
+      width: 72px; margin: 0;
+      padding: var(--size-1) var(--size-2);
+      height: auto; text-align: right;
+    }
+    .split-unidad { color: var(--pico-muted-color); font-weight: 400; }
+    .inp-parte {
+      width: 64px; margin: 0 auto;
+      padding: 2px var(--size-1); height: auto;
+      font-size: var(--font-size-0); text-align: center;
+      display: block;
+    }
+    .pct-aviso { font-size: var(--font-size-0); margin: var(--size-2) 0 0; }
+    .pct-aviso.error { color: var(--dc-rojo); font-weight: 700; }
+    .pct-aviso.ok { color: var(--dc-verde); }
+
+    /* ════════════════════════════════════════
+       ALERTA
+    ════════════════════════════════════════ */
+    .alerta {
+      padding: var(--size-3) var(--size-4);
+      border-radius: var(--radius-2);
+      border: 1px solid color-mix(in srgb, var(--dc-rojo) 35%, transparent);
+      border-left: 4px solid var(--dc-rojo);
+      background: var(--dc-rojo-suave);
+      margin: var(--size-4) 0;
+      font-size: var(--font-size-0);
+    }
+
+    /* ════════════════════════════════════════
+       VISTAS RESPONSIVE
+    ════════════════════════════════════════ */
+    .vista-tabla { display: none; }
+    .vista-cards { display: block; }
+    @media (min-width: 768px) {
+      .vista-tabla { display: block; }
+      .vista-cards { display: none; }
+    }
+
+    figure { overflow-x: auto; }
+    th, td { white-space: nowrap; vertical-align: middle; font-size: var(--font-size-0); }
+    th { font-family: var(--dc-fuente-cuerpo); letter-spacing: 0.02em; }
+    td input[type="checkbox"] { margin: 0; display: block; margin-inline: auto; }
+    td:has(input[type="checkbox"]) { text-align: center; }
+
+    /* ════════════════════════════════════════
+       TARJETAS DE ÍTEM (móvil)
+    ════════════════════════════════════════ */
+    .item-card {
+      padding: var(--size-4);
+      border: 1px solid var(--pico-card-border-color);
+      background: var(--pico-card-background-color);
+      border-radius: var(--radius-3);
+      margin-bottom: var(--size-3);
+      box-shadow: var(--dc-sombra-card);
+    }
+    .item-card-header {
+      display: flex; justify-content: space-between;
+      align-items: center; gap: var(--size-2);
+      margin-bottom: var(--size-3);
+    }
+    .item-precio {
+      color: var(--pico-primary);
+      font-weight: 700;
+      font-size: var(--font-size-0);
+      margin-left: var(--size-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: var(--size-2); }
+    .chip {
+      padding: var(--size-1) var(--size-3);
+      border-radius: var(--radius-round);
+      border: 1.5px solid var(--pico-muted-border-color);
+      background: transparent;
+      color: var(--pico-muted-color);
+      font-size: var(--font-size-0);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s var(--ease-3);
+      box-shadow: none;
+      margin: 0;
+    }
+    .chip:hover { border-color: var(--pico-primary); color: var(--pico-primary); }
+    .chip[aria-pressed="true"] {
+      background: var(--pico-primary);
+      border-color: var(--pico-primary);
+      color: var(--pico-primary-inverse);
+      transform: scale(1.03);
+    }
+
+    /* ════════════════════════════════════════
+       RESUMEN
+    ════════════════════════════════════════ */
+    .total-general {
+      display: flex; flex-wrap: wrap;
+      gap: var(--size-3);
+      padding: var(--size-4);
+      border-radius: var(--radius-3);
+      background: var(--dc-acento-suave);
+      border: 1px solid color-mix(in srgb, var(--pico-primary) 18%, transparent);
+      margin-bottom: var(--size-4);
+    }
+    .total-general > div { flex: 1; min-width: 120px; }
+    .total-general dt {
+      font-size: var(--font-size-00, 0.75rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--pico-muted-color);
+      font-weight: 700;
+    }
+    .total-general dd {
+      margin: 0;
+      font-family: var(--dc-fuente-display);
+      font-size: var(--font-size-3);
+      font-weight: 600;
+      color: var(--pico-h1-color);
+      font-variant-numeric: tabular-nums;
+    }
+    .total-general dd.destacado { color: var(--pico-primary); }
+
+    .personas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+      gap: var(--size-4);
+    }
+    .personas-grid article {
+      margin: 0;
+      padding: var(--size-4);
+      border-radius: var(--radius-3);
+      border: 1px solid var(--pico-card-border-color);
+      box-shadow: var(--dc-sombra-card);
+      transition: transform 0.2s var(--ease-3), box-shadow 0.2s var(--ease-3);
+    }
+    .personas-grid article:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.09);
+    }
+    .personas-grid article > header {
+      margin: calc(var(--size-4) * -1) calc(var(--size-4) * -1) var(--size-3);
+      padding: var(--size-3) var(--size-4);
+      background: transparent;
+      border-bottom: 1px solid var(--pico-muted-border-color);
+      display: flex; align-items: center; gap: var(--size-2);
+      font-family: var(--dc-fuente-display);
+      font-size: 1.05rem;
+    }
+
+    .resumen-row {
+      display: flex; justify-content: space-between;
+      padding: var(--size-1) 0;
+      font-size: var(--font-size-0);
+      font-variant-numeric: tabular-nums;
+    }
+    .resumen-row span:first-child { color: var(--pico-muted-color); }
+    .resumen-row.total {
+      border-top: 2px solid var(--pico-muted-border-color);
+      font-weight: 700; font-size: 1rem;
+      margin-top: var(--size-2); padding-top: var(--size-2);
+    }
+    .resumen-row.total span:first-child { color: var(--pico-color); }
+    .resumen-row.balance-positivo span:last-child { color: var(--dc-rojo); font-weight: 700; }
+    .resumen-row.balance-negativo span:last-child { color: var(--dc-verde); font-weight: 700; }
+
+    /* ════════════════════════════════════════
+       LIQUIDACIÓN
+    ════════════════════════════════════════ */
+    .metodo-chips { margin-bottom: var(--size-2); }
+    .metodo-desc {
+      font-size: var(--font-size-0);
+      color: var(--pico-muted-color);
+      margin-bottom: var(--size-3);
+      max-width: 60ch;
+    }
+
+    .saldos-det { margin-bottom: var(--size-4); }
+    .saldos-det summary {
+      font-size: var(--font-size-0);
+      font-weight: 700;
+      color: var(--pico-primary);
+      cursor: pointer;
+    }
+    .saldo-debe  { color: var(--dc-rojo);  font-weight: 700; }
+    .saldo-favor { color: var(--dc-verde); font-weight: 700; }
+    .saldo-aldia { color: var(--pico-muted-color); }
+
+    .liquidacion-lista { list-style: none; padding: 0; margin: 0; }
+    .transferencia-item {
+      padding: var(--size-3) var(--size-4);
+      border: 1px solid var(--pico-card-border-color);
+      background: var(--pico-card-background-color);
+      border-radius: var(--radius-3);
+      margin-bottom: var(--size-2);
+      box-shadow: var(--dc-sombra-card);
+      font-size: var(--font-size-1);
+    }
+    .transferencia-linea {
+      display: flex; align-items: center; gap: var(--size-3);
+    }
+    .transferencia-flecha {
+      color: var(--pico-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .transferencia-monto {
+      margin-left: auto;
+      font-family: var(--dc-fuente-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--pico-primary);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .transferencia-detalle {
+      display: block;
+      color: var(--pico-muted-color);
+      font-size: var(--font-size-0);
+      margin-top: var(--size-1);
+    }
+
+    .empty { color: var(--pico-muted-color); font-style: italic; font-size: var(--font-size-0); }
+
+    body > footer {
+      margin-top: var(--size-9);
+      text-align: center;
+      color: var(--pico-muted-color);
+    }
+  </style>
+
+  <!-- Aplicar tema guardado ANTES del primer render para evitar flash -->
+  <script>
+    (function () {
+      var t = localStorage.getItem('dc-tema');
+      if (t === 'light' || t === 'dark') {
+        document.documentElement.setAttribute('data-theme', t);
+      }
+    })();
+  </script>
+</head>
+<body x-data="app()" x-init="init()" x-effect="persistir()">
+
+  <!-- Región de anuncios accesible -->
+  <div role="status" aria-live="polite" class="sr-only" x-text="anuncio"></div>
+
+  <header>
+    <nav aria-label="Barra principal">
+      <ul>
+        <li>
+          <span class="marca">
+            <span class="marca-logo" aria-hidden="true">÷</span>
+            Divisor de Cuentas
+          </span>
+        </li>
+      </ul>
+      <ul>
+        <li>
+          <label for="sel-moneda" class="sr-only">Moneda</label>
+          <select id="sel-moneda" x-model="moneda">
+            <option value="$">$ Peso</option>
+            <option value="€">€ Euro</option>
+            <option value="S/.">S/. Sol</option>
+            <option value="£">£ Libra</option>
+            <option value="R$">R$ Real</option>
+          </select>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" role="switch" x-model="sinDecimales" />
+            Sin dec.
+          </label>
+        </li>
+        <li>
+          <button type="button" class="btn-tema"
+                  @click="cicloTema()"
+                  :aria-label="`Tema: ${etiquetaTema()}. Pulsar para cambiar.`"
+                  :title="`Tema: ${etiquetaTema()}`"
+                  x-text="iconoTema()">
+          </button>
+        </li>
+        <li>
+          <button type="button" @click="compartir()"
+                  x-text="copiado ? '¡Copiado!' : 'Compartir'">
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main x-cloak>
+
+    <div class="hero">
+      <h1>Dividir la cuenta, <em>sin discusiones.</em></h1>
+      <p>Cada quien paga lo que consumió. Propinas y cargos se reparten en proporción. Todo queda en tu navegador.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PARTICIPANTES
+    ══════════════════════════════════════ -->
+    <section aria-labelledby="h-personas">
+      <h2 id="h-personas">Participantes</h2>
+
+      <form class="form-inline" @submit.prevent="agregarPersona()">
+        <div class="flex-2">
+          <label for="inp-persona">Nombre</label>
+          <input id="inp-persona" type="text" x-model="nuevaPersona"
+                 placeholder="Ej: Ana" autocomplete="off" maxlength="40" />
+        </div>
+        <button type="submit">Agregar</button>
+      </form>
+
+      <p class="empty" x-show="personas.length === 0" style="margin-top: var(--size-3);">
+        Agrega al menos un participante para empezar.
+      </p>
+
+      <div x-show="personas.length > 0" style="margin-top: var(--size-3);">
+        <template x-for="p in personas" :key="p.id">
+          <div class="persona-row">
+            <span class="persona-avatar" aria-hidden="true" x-text="iniciales(p.nombre)"></span>
+            <span class="persona-nombre" x-text="p.nombre"></span>
+            <div class="persona-pagado">
+              <label :for="`pagado-${p.id}`">Pagó:</label>
+              <input :id="`pagado-${p.id}`" type="number"
+                     x-model.number="p.pagado"
+                     min="0" step="any" placeholder="0" />
+            </div>
+            <button type="button" class="btn-pagador"
+                    @click="togglePagador(p.id)"
+                    :aria-pressed="(pagadorId === p.id).toString()"
+                    :aria-label="pagadorId === p.id
+                      ? `${p.nombre} paga la cuenta. Pulsar para quitar.`
+                      : `Marcar a ${p.nombre} como quien paga la cuenta`"
+                    :title="pagadorId === p.id ? 'Paga la cuenta' : 'Marcar como pagador'">💳</button>
+            <button type="button" class="btn-del"
+                    @click="eliminarPersona(p.id)"
+                    :aria-label="`Eliminar a ${p.nombre}`">×</button>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         CONSUMOS
+    ══════════════════════════════════════ -->
+    <section aria-labelledby="h-items">
+      <h2 id="h-items">Consumos</h2>
+
+      <form class="form-inline" @submit.prevent="agregarItem()">
+        <div class="flex-2">
+          <label for="inp-item-nombre">Ítem</label>
+          <input id="inp-item-nombre" type="text" x-model="nuevoItem.nombre"
+                 placeholder="Ej: Pizza" autocomplete="off" maxlength="60" />
+        </div>
+        <div>
+          <label for="inp-item-precio">Precio</label>
+          <input id="inp-item-precio" type="number" x-model="nuevoItem.precio"
+                 placeholder="0" min="0" step="any" />
+        </div>
+        <button type="submit">Agregar</button>
+      </form>
+
+      <!-- Alerta ítems sin asignar -->
+      <template x-if="resumen.itemsHuerfanos.length > 0">
+        <div role="alert" class="alerta">
+          <strong>Saldo sin asignar:</strong>
+          <template x-for="item in resumen.itemsHuerfanos" :key="item.id">
+            <span x-text="`${item.nombre} (${fmt(item.precio)})`" style="margin-left: var(--size-2);"></span>
+          </template>
+          — Total pendiente: <strong x-text="fmt(resumen.montoHuerfano)"></strong>
+        </div>
+      </template>
+
+      <p class="empty" x-show="items.length === 0" style="margin-top: var(--size-3);">
+        Sin consumos aún.
+      </p>
+
+      <!-- ── ESCRITORIO: tabla matricial ── -->
+      <div class="vista-tabla" x-show="items.length > 0">
+        <figure>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Ítem</th>
+                <th scope="col">Precio</th>
+                <th scope="col">División</th>
+                <template x-for="p in personas" :key="p.id">
+                  <th scope="col" x-text="p.nombre"></th>
+                </template>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="item in items" :key="item.id">
+                <tr>
+                  <td x-text="item.nombre"></td>
+                  <td x-text="fmt(item.precio)"></td>
+                  <td>
+                    <select class="modo-select" x-model="item.modo"
+                            @change="alCambiarModo(item)"
+                            :aria-label="`Modo de división de ${item.nombre}`">
+                      <option value="igual">÷ igual</option>
+                      <option value="partes">partes</option>
+                      <option value="pct">%</option>
+                    </select>
+                  </td>
+                  <template x-for="p in personas" :key="p.id">
+                    <td>
+                      <template x-if="item.modo === 'igual'">
+                        <input type="checkbox"
+                               :checked="estaAsignado(item.id, p.id)"
+                               @change="toggleAsignacion(item.id, p.id)"
+                               :aria-label="`${p.nombre} consumió ${item.nombre}`" />
+                      </template>
+                      <template x-if="item.modo !== 'igual'">
+                        <input type="number" class="inp-parte" min="0" step="any"
+                               :value="parteDe(item, p.id)"
+                               @input="setParte(item, p.id, $event.target.value)"
+                               :placeholder="item.modo === 'pct' ? '%' : '0'"
+                               :aria-label="`${item.modo === 'pct' ? 'Porcentaje' : 'Partes'} de ${p.nombre} en ${item.nombre}`" />
+                      </template>
+                    </td>
+                  </template>
+                  <td>
+                    <button type="button" class="btn-del"
+                            @click="eliminarItem(item.id)"
+                            :aria-label="`Eliminar ${item.nombre}`">×</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </figure>
+      </div>
+
+      <!-- ── MÓVIL: tarjetas con chips ── -->
+      <div class="vista-cards" x-show="items.length > 0" style="margin-top: var(--size-3);">
+        <template x-for="item in items" :key="item.id">
+          <div class="item-card">
+            <div class="item-card-header">
+              <div>
+                <strong x-text="item.nombre"></strong>
+                <span class="item-precio" x-text="fmt(item.precio)"></span>
+              </div>
+              <select class="modo-select" x-model="item.modo"
+                      @change="alCambiarModo(item)"
+                      :aria-label="`Modo de división de ${item.nombre}`">
+                <option value="igual">÷ igual</option>
+                <option value="partes">partes</option>
+                <option value="pct">%</option>
+              </select>
+              <button type="button" class="btn-del"
+                      @click="eliminarItem(item.id)"
+                      :aria-label="`Eliminar ${item.nombre}`">×</button>
+            </div>
+            <div class="chips" x-show="item.modo === 'igual' && personas.length > 0">
+              <template x-for="p in personas" :key="p.id">
+                <button type="button" class="chip"
+                        :aria-pressed="estaAsignado(item.id, p.id).toString()"
+                        @click="toggleAsignacion(item.id, p.id)"
+                        x-text="p.nombre">
+                </button>
+              </template>
+            </div>
+            <div class="split-grid" x-show="item.modo !== 'igual' && personas.length > 0">
+              <template x-for="p in personas" :key="p.id">
+                <label class="split-row">
+                  <span x-text="p.nombre"></span>
+                  <span>
+                    <input type="number" min="0" step="any"
+                           :value="parteDe(item, p.id)"
+                           @input="setParte(item, p.id, $event.target.value)"
+                           :placeholder="item.modo === 'pct' ? '%' : '0'" />
+                    <span class="split-unidad" x-text="item.modo === 'pct' ? '%' : 'pt'"></span>
+                  </span>
+                </label>
+              </template>
+            </div>
+            <p class="pct-aviso"
+               x-show="item.modo === 'pct' && personas.length > 0"
+               :class="Math.abs(sumaPct(item) - 100) < 0.01 ? 'ok' : 'error'"
+               x-text="`Asignado: ${Math.round(sumaPct(item) * 100) / 100}% de 100%`"></p>
+            <p class="empty" x-show="personas.length === 0" style="margin: 0;">
+              Sin participantes asignados
+            </p>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         CARGOS ADICIONALES
+    ══════════════════════════════════════ -->
+    <section aria-labelledby="h-cargos">
+      <h2 id="h-cargos">Cargos adicionales</h2>
+      <div class="grid-2">
+        <div>
+          <label for="inp-propina">Propina (%)</label>
+          <input id="inp-propina" type="number"
+                 x-model.number="propinaPct"
+                 min="0" max="100" step="1" placeholder="0" />
+        </div>
+        <div>
+          <label for="inp-cargos">
+            Otros cargos (<span x-text="moneda"></span>)
+          </label>
+          <input id="inp-cargos" type="number"
+                 x-model.number="cargosExtra"
+                 min="0" step="any" placeholder="0" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         RESUMEN POR PERSONA
+    ══════════════════════════════════════ -->
+    <section aria-labelledby="h-resumen"
+             x-show="personas.length > 0 && items.length > 0">
+      <h2 id="h-resumen">Resumen</h2>
+
+      <dl class="total-general">
+        <div>
+          <dt>Consumos</dt>
+          <dd x-text="fmt(resumen.totalSub)"></dd>
+        </div>
+        <div x-show="propinaPct > 0">
+          <dt>Propina</dt>
+          <dd x-text="fmt(resumen.propinaMonto)"></dd>
+        </div>
+        <div x-show="cargosExtra > 0">
+          <dt>Cargos</dt>
+          <dd x-text="fmt(resumen.cargoMonto)"></dd>
+        </div>
+        <div>
+          <dt>Total cuenta</dt>
+          <dd class="destacado" x-text="fmt(resumen.totalSub + resumen.propinaMonto + resumen.cargoMonto)"></dd>
+        </div>
+      </dl>
+
+      <div class="personas-grid">
+        <template x-for="p in personas" :key="p.id">
+          <article>
+            <header>
+              <span class="persona-avatar" aria-hidden="true" x-text="iniciales(p.nombre)"></span>
+              <strong x-text="p.nombre"></strong>
+              <span class="badge-pagador" x-show="pagadorId === p.id">💳 paga la cuenta</span>
+            </header>
+
+            <div class="resumen-row">
+              <span>Consumo</span>
+              <span x-text="fmt(resumen.subtotales[p.id] ?? 0)"></span>
+            </div>
+
+            <div class="resumen-row" x-show="propinaPct > 0">
+              <span>Propina (<span x-text="propinaPct"></span>%)</span>
+              <span x-text="fmt(resumen.propinaDesglose[p.id] ?? 0)"></span>
+            </div>
+
+            <div class="resumen-row" x-show="cargosExtra > 0">
+              <span>Otros cargos</span>
+              <span x-text="fmt(resumen.cargoDesglose[p.id] ?? 0)"></span>
+            </div>
+
+            <div class="resumen-row total">
+              <span>Total a pagar</span>
+              <span x-text="fmt(resumen.totales[p.id] ?? 0)"></span>
+            </div>
+
+            <template x-if="(resumen.pagosEfectivos[p.id] ?? 0) > 0.005">
+              <div>
+                <div class="resumen-row">
+                  <span>Pagado al local</span>
+                  <span x-text="fmt(resumen.pagosEfectivos[p.id])"></span>
+                </div>
+                <div class="resumen-row"
+                     :class="(resumen.totales[p.id] ?? 0) - (resumen.pagosEfectivos[p.id] ?? 0) > 0.005
+                               ? 'balance-positivo'
+                               : 'balance-negativo'">
+                  <span>Balance</span>
+                  <span x-text="fmt((resumen.totales[p.id] ?? 0) - (resumen.pagosEfectivos[p.id] ?? 0))"></span>
+                </div>
+              </div>
+            </template>
+          </article>
+        </template>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         LIQUIDACIÓN DE DEUDAS
+    ══════════════════════════════════════ -->
+    <section aria-labelledby="h-liquidacion"
+             x-show="resumen.transferencias.length > 0">
+      <h2 id="h-liquidacion">Liquidación de deudas</h2>
+
+      <div class="chips metodo-chips" role="group" aria-label="Método de liquidación">
+        <button type="button" class="chip"
+                :aria-pressed="(metodoLiquidacion === 'minimo').toString()"
+                @click="metodoLiquidacion = 'minimo'">Mínimas transferencias</button>
+        <button type="button" class="chip"
+                :aria-pressed="(metodoLiquidacion === 'central').toString()"
+                @click="metodoLiquidacion = 'central'">Todo a una persona</button>
+        <button type="button" class="chip"
+                :aria-pressed="(metodoLiquidacion === 'proporcional').toString()"
+                @click="metodoLiquidacion = 'proporcional'">Proporcional</button>
+      </div>
+      <p class="metodo-desc" x-text="descMetodo()"></p>
+
+      <details class="saldos-det">
+        <summary>Ver saldos individuales</summary>
+        <figure>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Persona</th>
+                <th scope="col">Debe pagar</th>
+                <th scope="col">Pagó</th>
+                <th scope="col">Balance</th>
+                <th scope="col">Situación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="s in resumen.saldos" :key="s.id">
+                <tr>
+                  <td x-text="s.nombre"></td>
+                  <td x-text="fmt(s.total)"></td>
+                  <td x-text="fmt(s.pagado)"></td>
+                  <td :class="s.saldo > 0.005 ? 'saldo-debe' : (s.saldo < -0.005 ? 'saldo-favor' : 'saldo-aldia')"
+                      x-text="fmt(Math.abs(s.saldo))"></td>
+                  <td :class="s.saldo > 0.005 ? 'saldo-debe' : (s.saldo < -0.005 ? 'saldo-favor' : 'saldo-aldia')"
+                      x-text="s.saldo > 0.005 ? 'Debe' : (s.saldo < -0.005 ? 'Le deben' : 'Al día')"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </figure>
+      </details>
+
+      <ol class="liquidacion-lista">
+        <template x-for="(t, i) in resumen.transferencias" :key="i">
+          <li class="transferencia-item">
+            <div class="transferencia-linea">
+              <strong x-text="t.de"></strong>
+              <span class="transferencia-flecha" aria-hidden="true">⟶</span>
+              <span class="sr-only">le transfiere a</span>
+              <strong x-text="t.para"></strong>
+              <span class="transferencia-monto" x-text="fmt(t.monto)"></span>
+            </div>
+            <small class="transferencia-detalle" x-text="t.detalle"></small>
+          </li>
+        </template>
+      </ol>
+    </section>
+
+  </main>
+
+  <footer>
+    <small>Divisor de Cuentas — funciona sin conexión · tus datos nunca salen del navegador</small>
+  </footer>
+
+  <script>
+  function app() {
+    return {
+      // ── Estado principal ──
+      personas: [],
+      items: [],
+      propinaPct: 0,
+      cargosExtra: 0,
+      moneda: '$',
+      sinDecimales: false,
+      pagadorId: null,
+      metodoLiquidacion: 'minimo', // 'minimo' | 'central' | 'proporcional'
+
+      // ── Tema: 'auto' | 'light' | 'dark' ──
+      tema: localStorage.getItem('dc-tema') || 'auto',
+
+      // ── UI temporal ──
+      nuevaPersona: '',
+      nuevoItem: { nombre: '', precio: '' },
+      copiado: false,
+      anuncio: '',
+      _nextPersonaId: 1,
+      _nextItemId: 1,
+
+      // ── Inicialización ──
+      init() {
+        const hash = location.hash.slice(1);
+        if (hash) {
+          try {
+            const json = new TextDecoder().decode(
+              Uint8Array.from(atob(hash), c => c.charCodeAt(0))
+            );
+            this._cargarEstado(JSON.parse(json));
+            history.replaceState(null, '', location.pathname);
+            return;
+          } catch (_) {}
+        }
+        try {
+          const saved = localStorage.getItem('dividir-cuentas');
+          if (saved) this._cargarEstado(JSON.parse(saved));
+        } catch (_) {}
+      },
+
+      _cargarEstado(s) {
+        this.personas    = s.personas    ?? [];
+        this.items       = (s.items ?? []).map(i => ({ modo: 'igual', partes: {}, ...i }));
+        this.propinaPct  = s.propinaPct  ?? 0;
+        this.cargosExtra = s.cargosExtra ?? 0;
+        this.moneda      = s.moneda      ?? '$';
+        this.sinDecimales = s.sinDecimales ?? false;
+        this.pagadorId   = s.pagadorId   ?? null;
+        this.metodoLiquidacion = s.metodoLiquidacion ?? 'minimo';
+        this._nextPersonaId = this.personas.length
+          ? Math.max(...this.personas.map(p => p.id)) + 1 : 1;
+        this._nextItemId = this.items.length
+          ? Math.max(...this.items.map(i => i.id)) + 1 : 1;
+      },
+
+      // ── Persistencia (x-effect lo llama automáticamente) ──
+      persistir() {
+        try {
+          localStorage.setItem('dividir-cuentas', JSON.stringify({
+            personas:     this.personas,
+            items:        this.items,
+            propinaPct:   this.propinaPct,
+            cargosExtra:  this.cargosExtra,
+            moneda:       this.moneda,
+            sinDecimales: this.sinDecimales,
+            pagadorId:    this.pagadorId,
+            metodoLiquidacion: this.metodoLiquidacion,
+          }));
+        } catch (_) {}
+        this._aplicarTema();
+      },
+
+      // ── Tema ──
+      _aplicarTema() {
+        const html = document.documentElement;
+        if (this.tema === 'auto') html.removeAttribute('data-theme');
+        else html.setAttribute('data-theme', this.tema);
+        try {
+          if (this.tema === 'auto') localStorage.removeItem('dc-tema');
+          else localStorage.setItem('dc-tema', this.tema);
+        } catch (_) {}
+      },
+
+      cicloTema() {
+        const orden = { auto: 'light', light: 'dark', dark: 'auto' };
+        this.tema = orden[this.tema] || 'auto';
+        this.anuncio = `Tema: ${this.etiquetaTema()}`;
+        setTimeout(() => { this.anuncio = ''; }, 1500);
+      },
+
+      iconoTema() {
+        return { auto: '◐', light: '☀', dark: '☾' }[this.tema] || '◐';
+      },
+
+      etiquetaTema() {
+        return { auto: 'automático', light: 'claro', dark: 'oscuro' }[this.tema] || 'automático';
+      },
+
+      // ── Personas ──
+      agregarPersona() {
+        const nombre = this.nuevaPersona.trim();
+        if (!nombre) return;
+        this.personas.push({ id: this._nextPersonaId++, nombre, pagado: 0 });
+        this.nuevaPersona = '';
+      },
+
+      eliminarPersona(id) {
+        this.personas = this.personas.filter(p => p.id !== id);
+        if (this.pagadorId === id) this.pagadorId = null;
+        this.items = this.items.map(item => {
+          const partes = { ...(item.partes || {}) };
+          delete partes[id];
+          return {
+            ...item,
+            asignados: item.asignados.filter(pid => pid !== id),
+            partes,
+          };
+        });
+      },
+
+      togglePagador(id) {
+        this.pagadorId = this.pagadorId === id ? null : id;
+      },
+
+      iniciales(nombre) {
+        return nombre.trim().split(/\s+/).slice(0, 2)
+          .map(w => w[0]).join('').toUpperCase();
+      },
+
+      // ── Ítems ──
+      agregarItem() {
+        const nombre = this.nuevoItem.nombre.trim();
+        const precio = parseFloat(this.nuevoItem.precio);
+        if (!nombre || isNaN(precio) || precio <= 0) return;
+        this.items.push({
+          id: this._nextItemId++,
+          nombre,
+          precio,
+          modo: 'igual',
+          partes: {},
+          asignados: this.personas.map(p => p.id),
+        });
+        this.nuevoItem = { nombre: '', precio: '' };
+      },
+
+      eliminarItem(id) {
+        this.items = this.items.filter(i => i.id !== id);
+      },
+
+      // ── Asignación ──
+      estaAsignado(itemId, personaId) {
+        const item = this.items.find(i => i.id === itemId);
+        return item ? item.asignados.includes(personaId) : false;
+      },
+
+      toggleAsignacion(itemId, personaId) {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return;
+        const idx = item.asignados.indexOf(personaId);
+        if (idx >= 0) item.asignados.splice(idx, 1);
+        else          item.asignados.push(personaId);
+      },
+
+      // ── División por partes / porcentaje ──
+      alCambiarModo(item) {
+        if (!item.partes) item.partes = {};
+        // Al entrar a partes/% por primera vez, sembrar valores desde los asignados
+        if (item.modo !== 'igual' && Object.keys(item.partes).length === 0) {
+          const base = item.asignados.length ? item.asignados : this.personas.map(p => p.id);
+          for (const pid of base) {
+            item.partes[pid] = item.modo === 'pct'
+              ? Math.round(1000 / base.length) / 10
+              : 1;
+          }
+        }
+      },
+
+      parteDe(item, pid) {
+        const v = (item.partes || {})[pid];
+        return v ?? '';
+      },
+
+      setParte(item, pid, valor) {
+        if (!item.partes) item.partes = {};
+        const n = parseFloat(valor);
+        if (isNaN(n) || n <= 0) delete item.partes[pid];
+        else item.partes[pid] = n;
+      },
+
+      sumaPct(item) {
+        return Object.values(item.partes || {})
+          .reduce((a, v) => a + (parseFloat(v) || 0), 0);
+      },
+
+      // ── Formato monetario ──
+      fmt(valor) {
+        const n = isNaN(valor) ? 0 : (this.sinDecimales ? Math.round(valor) : valor);
+        return this.moneda + new Intl.NumberFormat(navigator.language, {
+          minimumFractionDigits: this.sinDecimales ? 0 : 2,
+          maximumFractionDigits: this.sinDecimales ? 0 : 2,
+        }).format(n);
+      },
+
+      // ── Compartir ──
+      async compartir() {
+        try {
+          const json = JSON.stringify({
+            personas: this.personas, items: this.items,
+            propinaPct: this.propinaPct, cargosExtra: this.cargosExtra,
+            moneda: this.moneda, sinDecimales: this.sinDecimales,
+            pagadorId: this.pagadorId,
+            metodoLiquidacion: this.metodoLiquidacion,
+          });
+          const bytes  = new TextEncoder().encode(json);
+          const binStr = Array.from(bytes, b => String.fromCharCode(b)).join('');
+          const hash   = btoa(binStr);
+          const url    = `${location.origin}${location.pathname}#${hash}`;
+          await navigator.clipboard.writeText(url);
+          this.copiado = true;
+          this.anuncio = '¡Enlace copiado al portapapeles!';
+          setTimeout(() => { this.copiado = false; this.anuncio = ''; }, 2500);
+        } catch (_) {}
+      },
+
+      // ── Liquidación: 3 métodos de saldar diferencias ──
+      descMetodo() {
+        return {
+          minimo: 'La menor cantidad de transferencias posible: el mayor deudor le paga al mayor acreedor hasta saldar todo.',
+          central: 'Todos le pagan a una sola persona (quien paga la cuenta), y esa persona le devuelve a los que adelantaron de más.',
+          proporcional: 'Cada deudor reparte su pago entre todos los que adelantaron dinero, en proporción a lo que puso cada uno.',
+        }[this.metodoLiquidacion] || '';
+      },
+
+      _liquidar(saldos) {
+        const f = v => this.fmt(v);
+        const deudores = saldos
+          .filter(s => s.saldo > 0.005)
+          .map(s => ({ ...s, resta: s.saldo }))
+          .sort((a, b) => b.saldo - a.saldo);
+        const acreedores = saldos
+          .filter(s => s.saldo < -0.005)
+          .map(s => ({ ...s, credito: -s.saldo, resta: -s.saldo }))
+          .sort((a, b) => b.credito - a.credito);
+        if (!deudores.length || !acreedores.length) return [];
+
+        const t = [];
+
+        if (this.metodoLiquidacion === 'proporcional') {
+          const totalCredito = acreedores.reduce((a, c) => a + c.credito, 0);
+          for (const d of deudores) {
+            for (const a of acreedores) {
+              const monto = d.saldo * (a.credito / totalCredito);
+              if (monto > 0.005) {
+                const pct = Math.round(a.credito / totalCredito * 1000) / 10;
+                t.push({
+                  de: d.nombre, para: a.nombre, monto,
+                  detalle: `${pct}% de la deuda de ${d.nombre} (${f(d.saldo)}): `
+                    + `${a.nombre} adelantó ${f(a.credito)} de los ${f(totalCredito)} totales.`,
+                });
+              }
+            }
+          }
+
+        } else if (this.metodoLiquidacion === 'central') {
+          const hub = acreedores.find(a => a.id === this.pagadorId) || acreedores[0];
+          for (const d of deudores) {
+            t.push({
+              de: d.nombre, para: hub.nombre, monto: d.saldo,
+              detalle: `${d.nombre} salda su deuda completa (${f(d.saldo)}) con ${hub.nombre}, que centraliza la cuenta.`,
+            });
+          }
+          for (const a of acreedores) {
+            if (a.id === hub.id) continue;
+            t.push({
+              de: hub.nombre, para: a.nombre, monto: a.credito,
+              detalle: `${hub.nombre} le devuelve a ${a.nombre} los ${f(a.credito)} que adelantó de más.`,
+            });
+          }
+
+        } else { // minimo: greedy mayor deudor → mayor acreedor
+          let i = 0, j = 0;
+          while (i < deudores.length && j < acreedores.length) {
+            const d = deudores[i], a = acreedores[j];
+            const monto = Math.min(d.resta, a.resta);
+            if (monto > 0.005) {
+              t.push({
+                de: d.nombre, para: a.nombre, monto,
+                detalle: `Deuda total de ${d.nombre}: ${f(d.saldo)} · ${a.nombre} adelantó ${f(a.credito)}.`,
+              });
+            }
+            d.resta -= monto;
+            a.resta -= monto;
+            if (d.resta < 0.005) i++;
+            if (a.resta < 0.005) j++;
+          }
+        }
+
+        return t;
+      },
+
+      // ── Cálculo principal (getter reactivo) ──
+      get resumen() {
+        const subtotales      = {};
+        const propinaDesglose = {};
+        const cargoDesglose   = {};
+        const totales         = {};
+
+        for (const p of this.personas) subtotales[p.id] = 0;
+
+        const itemsHuerfanos = [];
+        let montoHuerfano = 0;
+
+        for (const item of this.items) {
+          const precio = parseFloat(item.precio) || 0;
+          if (precio <= 0) continue;
+          const modo = item.modo || 'igual';
+
+          if (modo === 'igual') {
+            const asig = item.asignados.filter(pid => pid in subtotales);
+            if (asig.length === 0) {
+              itemsHuerfanos.push(item);
+              montoHuerfano += precio;
+              continue;
+            }
+            const porPersona = precio / asig.length;
+            for (const pid of asig) subtotales[pid] += porPersona;
+
+          } else {
+            const entradas = Object.entries(item.partes || {})
+              .filter(([pid, v]) => (parseFloat(v) || 0) > 0 && pid in subtotales);
+            if (entradas.length === 0) {
+              itemsHuerfanos.push(item);
+              montoHuerfano += precio;
+              continue;
+            }
+            if (modo === 'partes') {
+              const totalPartes = entradas.reduce((a, [, v]) => a + parseFloat(v), 0);
+              for (const [pid, v] of entradas) {
+                subtotales[pid] += precio * parseFloat(v) / totalPartes;
+              }
+            } else { // pct: se cobra exactamente el % indicado
+              let sumPct = 0;
+              for (const [pid, v] of entradas) {
+                const n = parseFloat(v);
+                sumPct += n;
+                subtotales[pid] += precio * n / 100;
+              }
+              const resto = precio * (100 - sumPct) / 100;
+              if (resto > 0.005) {
+                itemsHuerfanos.push({
+                  id: item.id,
+                  nombre: `${item.nombre} — solo ${Math.round(sumPct * 100) / 100}% asignado`,
+                  precio: resto,
+                });
+                montoHuerfano += resto;
+              }
+            }
+          }
+        }
+
+        const totalSub     = Object.values(subtotales).reduce((a, b) => a + b, 0);
+        const propinaMonto = totalSub * (parseFloat(this.propinaPct) || 0) / 100;
+        const cargoMonto   = parseFloat(this.cargosExtra) || 0;
+
+        for (const p of this.personas) {
+          const sub        = subtotales[p.id];
+          const proporcion = totalSub > 0 ? sub / totalSub : 0;
+          propinaDesglose[p.id] = propinaMonto * proporcion;
+          cargoDesglose[p.id]   = cargoMonto   * proporcion;
+          totales[p.id]         = sub + propinaDesglose[p.id] + cargoDesglose[p.id];
+        }
+
+        // Pagos efectivos: quien "paga la cuenta" cubre lo que nadie declaró
+        const totalCuenta = totalSub + propinaMonto + cargoMonto;
+        const declarado = this.personas
+          .reduce((a, p) => a + (parseFloat(p.pagado) || 0), 0);
+        const restante = Math.max(0, totalCuenta - declarado);
+        const pagosEfectivos = {};
+        for (const p of this.personas) {
+          pagosEfectivos[p.id] = (parseFloat(p.pagado) || 0)
+            + (p.id === this.pagadorId ? restante : 0);
+        }
+
+        // Saldos individuales y plan de pagos según método elegido
+        const saldos = this.personas.map(p => ({
+          id: p.id,
+          nombre: p.nombre,
+          total: totales[p.id] ?? 0,
+          pagado: pagosEfectivos[p.id] ?? 0,
+          saldo: (totales[p.id] ?? 0) - (pagosEfectivos[p.id] ?? 0),
+        }));
+        const transferencias = this._liquidar(saldos);
+
+        return {
+          subtotales, propinaDesglose, cargoDesglose, totales,
+          totalSub, propinaMonto, cargoMonto, pagosEfectivos,
+          itemsHuerfanos, montoHuerfano, saldos, transferencias,
+        };
+      },
+    };
+  }
+  </script>
+
+  <!-- Alpine.js v3 — debe ir al final con defer -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+</body>
+</html>

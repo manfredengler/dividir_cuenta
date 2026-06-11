@@ -1,0 +1,99 @@
+# Divisor de Cuentas
+
+Divide cuentas grupales de forma equitativa. Archivo único `index.html`, sin servidor, sin build step. Funciona offline y se puede compartir por URL.
+
+**[Ver demo →](https://manfred-engler.github.io/dividir-cuentas/)**
+
+---
+
+## Stack
+
+| Capa | Tecnología |
+|---|---|
+| Estructura | HTML5 semántico, WCAG AA |
+| Estilos | Pico.css v2 (classless) + Open Props |
+| Lógica | Alpine.js v3 |
+| Persistencia | `localStorage` + URL hash (Base64 UTF-8) |
+| Despliegue | GitHub Pages |
+
+---
+
+## Funcionalidades
+
+### v0.1.0 — Cimiento
+- [x] HTML5 semántico (`lang`, `viewport`, `color-scheme`)
+- [x] CDN: Open Props + Pico.css v2 classless + Alpine.js v3
+- [x] Dark mode automático (sistema operativo)
+- [x] Switch de tema de 3 estados: automático → claro → oscuro (persistido, sin flash al recargar)
+- [x] Identidad visual propia: tipografía Fraunces + Karla, paleta papel/tinta con acento esmeralda
+- [x] Estado global con `x-data="app()"`
+- [x] Selector de moneda (`$`, `€`, `S/.`, `£`, `R$`)
+- [x] Toggle sin decimales
+
+### v0.2.0 — Personas e Ítems
+- [x] Agregar / eliminar participantes
+- [x] Agregar / eliminar consumos (nombre + precio)
+- [x] Al agregar ítem, todos los participantes quedan asignados por defecto
+- [x] Al eliminar persona, se desvincula de todos los ítems
+- [x] Labels vinculados a todos los inputs
+
+### v0.3.0 — Motor de cálculos
+- [x] Subtotal individual por consumo directo
+- [x] Propina (%) distribuida proporcionalmente
+- [x] Otros cargos fijos distribuidos proporcionalmente
+- [x] Detección de ítems sin asignar con alerta `role="alert"`
+
+### v0.4.0 — Interfaz adaptativa
+- [x] Vista escritorio (`≥768px`): tabla matricial con checkboxes
+- [x] Vista móvil (`<768px`): tarjetas por ítem con chips táctiles (`aria-pressed`)
+- [x] Resumen por persona: consumo, propina, cargos, total, balance
+- [x] Código de color en balances (positivo/negativo)
+
+### v0.5.0 — Liquidación de deudas
+- [x] Campo "Pagó al local" por persona
+- [x] Marcador 💳 "paga la cuenta": esa persona cubre lo no declarado y recibe las transferencias
+- [x] Tres métodos de liquidación seleccionables (persistidos y compartibles):
+  - **Mínimas transferencias** — greedy, la menor cantidad de pagos posible
+  - **Todo a una persona** — todos pagan al 💳 pagador (o mayor acreedor), que devuelve a los demás
+  - **Proporcional** — cada deudor reparte entre los acreedores según lo que adelantó cada uno
+- [x] Tabla de saldos individuales (debe pagar / pagó / balance / situación)
+- [x] Cada transferencia muestra explícitamente quién paga a quién, con detalle del cálculo
+
+### v0.7.0 — División avanzada por ítem
+- [x] Modo "÷ igual": partes iguales entre los asignados (checkboxes / chips)
+- [x] Modo "partes": fracciones ponderadas (ej. Ana 2, Beto 1 → 2/3 y 1/3)
+- [x] Modo "%": porcentaje exacto por persona, con indicador de suma (verde al llegar a 100%)
+- [x] El % sin asignar se reporta en la alerta de saldo pendiente
+
+### v0.6.0 — Persistencia y compartición
+- [x] Auto-guardado en `localStorage` con `x-effect`
+- [x] Restauración desde URL hash (Base64 UTF-8) al cargar
+- [x] Botón "Compartir": genera URL con estado codificado, copia al portapapeles
+- [x] Anuncio accesible `aria-live` al copiar el enlace
+- [x] Compatible con GitHub Pages (hash puro, sin servidor)
+
+### v1.0.0 — Pulido
+- [x] Formato monetario con `Intl.NumberFormat` (locale del navegador)
+- [x] Landmarks semánticos (`<header>`, `<main>`, `<footer>`, `<section>`)
+- [x] Open Props para spacing, radius y transiciones consistentes
+- [ ] Auditoría accesibilidad con lector de pantalla
+- [ ] Pruebas en Safari iOS / Chrome Android
+- [ ] SRI hashes en las dependencias CDN
+
+---
+
+## Uso local
+
+Abre `index.html` directamente en el navegador. No requiere servidor.
+
+```
+open index.html        # macOS
+start index.html       # Windows
+xdg-open index.html    # Linux
+```
+
+## Despliegue en GitHub Pages
+
+1. Sube el repositorio a GitHub
+2. Settings → Pages → Branch: `main` / Folder: `/ (root)`
+3. La app queda disponible en `https://<usuario>.github.io/<repo>/`
