@@ -12,16 +12,15 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d7a5f'/><text y='.9em' font-size='72' x='50%' dominant-baseline='auto' text-anchor='middle' fill='white'>÷</text></svg>" />
 
   <!-- Tipografía: Fraunces (display editorial) + Karla (cuerpo) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- Carga asíncrona: no bloquea el primer render (fallback Georgia/system-ui mientras tanto) -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;700&display=swap" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;700&display=swap" /></noscript>
 
-  <!-- Open Props: design tokens (spacing, radius, easing) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-props@1/open-props.min.css" crossorigin="anonymous" />
-  <!-- Pico.css v2: classless semantic styling con dark mode nativo -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css" crossorigin="anonymous" />
+  <!-- Open Props (design tokens) + Pico.css v2 (classless) combinados en un solo request -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/combine/npm/open-props@1/open-props.min.css,npm/@picocss/pico@2/css/pico.classless.min.css" crossorigin="anonymous" />
 
   <style>
     /* ════════════════════════════════════════

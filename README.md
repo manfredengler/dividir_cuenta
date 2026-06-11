@@ -127,6 +127,8 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 
 **Performance:**
 - [x] Google Fonts con carga asíncrona (`media="print" onload`) — deja de bloquear el primer render (~880ms est.), con `<noscript>` de respaldo
+- [x] Open Props + Pico.css combinados en un solo request (`cdn.jsdelivr.net/combine/...`) — un round-trip render-blocking menos
+- [x] `preconnect` a `cdn.jsdelivr.net` (faltaba; solo existía para Google Fonts)
 
 ---
 
