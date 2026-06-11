@@ -419,6 +419,11 @@
       font-size: var(--font-size-0); text-align: center;
       display: block;
     }
+    .pagador-item-row {
+      display: flex; align-items: center; gap: var(--size-2);
+      font-size: var(--font-size-0);
+      margin: 0 0 var(--size-3);
+    }
     .pct-aviso { font-size: var(--font-size-0); margin: var(--size-2) 0 0; }
     .pct-aviso.error { color: var(--dc-rojo); font-weight: 700; }
     .pct-aviso.ok { color: var(--dc-verde); }
@@ -799,6 +804,7 @@
                 <th scope="col">Ítem</th>
                 <th scope="col">Precio</th>
                 <th scope="col">División</th>
+                <th scope="col">Pagó</th>
                 <template x-for="p in personas" :key="p.id">
                   <th scope="col" x-text="p.nombre"></th>
                 </template>
@@ -817,6 +823,17 @@
                       <option value="igual">÷ igual</option>
                       <option value="partes">partes</option>
                       <option value="pct">%</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select class="modo-select"
+                            :value="item.pagadorItemId ?? ''"
+                            @change="item.pagadorItemId = $event.target.value === '' ? null : Number($event.target.value)"
+                            :aria-label="`Quién pagó ${item.nombre}`">
+                      <option value="">—</option>
+                      <template x-for="p in personas" :key="p.id">
+                        <option :value="p.id" x-text="p.nombre" :selected="item.pagadorItemId === p.id"></option>
+                      </template>
                     </select>
                   </td>
                   <template x-for="p in personas" :key="p.id">
@@ -869,6 +886,17 @@
                       @click="eliminarItem(item.id)"
                       :aria-label="`Eliminar ${item.nombre}`">×</button>
             </div>
+            <label class="pagador-item-row" x-show="personas.length > 0">
+              <span class="split-unidad">Pagado por</span>
+              <select class="modo-select"
+                      :value="item.pagadorItemId ?? ''"
+                      @change="item.pagadorItemId = $event.target.value === '' ? null : Number($event.target.value)">
+                <option value="">—</option>
+                <template x-for="p in personas" :key="p.id">
+                  <option :value="p.id" x-text="p.nombre" :selected="item.pagadorItemId === p.id"></option>
+                </template>
+              </select>
+            </label>
             <div class="chips" x-show="item.modo === 'igual' && personas.length > 0">
               <template x-for="p in personas" :key="p.id">
                 <button type="button" class="chip"
@@ -1120,7 +1148,7 @@
 
       _cargarEstado(s) {
         this.personas    = s.personas    ?? [];
-        this.items       = (s.items ?? []).map(i => ({ modo: 'igual', partes: {}, ...i }));
+        this.items       = (s.items ?? []).map(i => ({ modo: 'igual', partes: {}, pagadorItemId: null, ...i }));
         this.propinaPct  = s.propinaPct  ?? 0;
         this.cargosExtra = s.cargosExtra ?? 0;
         this.moneda      = s.moneda      ?? '$';
@@ -1194,6 +1222,7 @@
             ...item,
             asignados: item.asignados.filter(pid => pid !== id),
             partes,
+            pagadorItemId: item.pagadorItemId === id ? null : item.pagadorItemId,
           };
         });
       },
@@ -1218,6 +1247,7 @@
           precio,
           modo: 'igual',
           partes: {},
+          pagadorItemId: null,
           asignados: this.personas.map(p => p.id),
         });
         this.nuevoItem = { nombre: '', precio: '' };
@@ -1450,14 +1480,25 @@
           totales[p.id]         = sub + propinaDesglose[p.id] + cargoDesglose[p.id];
         }
 
+        // Pagos por ítem: cada ítem puede tener su propio pagador
+        const pagosPorItems = {};
+        for (const p of this.personas) pagosPorItems[p.id] = 0;
+        for (const item of this.items) {
+          const precio = parseFloat(item.precio) || 0;
+          if (precio > 0 && item.pagadorItemId != null && item.pagadorItemId in pagosPorItems) {
+            pagosPorItems[item.pagadorItemId] += precio;
+          }
+        }
+
         // Pagos efectivos: quien "paga la cuenta" cubre lo que nadie declaró
         const totalCuenta = totalSub + propinaMonto + cargoMonto;
         const declarado = this.personas
-          .reduce((a, p) => a + (parseFloat(p.pagado) || 0), 0);
+          .reduce((a, p) => a + (parseFloat(p.pagado) || 0) + (pagosPorItems[p.id] || 0), 0);
         const restante = Math.max(0, totalCuenta - declarado);
         const pagosEfectivos = {};
         for (const p of this.personas) {
           pagosEfectivos[p.id] = (parseFloat(p.pagado) || 0)
+            + (pagosPorItems[p.id] || 0)
             + (p.id === this.pagadorId ? restante : 0);
         }
 

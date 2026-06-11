@@ -101,6 +101,15 @@ Auditoría con axe-core (WCAG 2 AA) + revisión manual. Resultado previo: 1 viol
 **Resiliencia:**
 - [x] `<noscript>` con aviso en rojo cuando JavaScript está deshabilitado
 
+### v1.2.0 — Pagador por ítem
+- [x] Selector "Pagó" en cada consumo: cualquier participante puede asociarse como quien pagó ese ítem
+- [x] Disponible en la tabla de escritorio (columna "Pagó") y en las tarjetas móviles (fila "Pagado por")
+- [x] El precio del ítem se suma a los pagos efectivos de esa persona y entra al cálculo de saldos y transferencias
+- [x] Compatible con el campo manual "Pagó al local" y con el 💳 pagador global (que sigue cubriendo el resto no declarado)
+- [x] Al eliminar una persona se desvincula como pagadora de sus ítems
+- [x] Migración transparente de estados guardados antiguos (`pagadorItemId: null` por defecto)
+- [x] Verificado E2E con Playwright: ítem de $100 pagado por Ana dividido entre 2 → transferencia "Beto → Ana $50"
+
 ---
 
 ## Uso local
