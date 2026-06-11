@@ -14,7 +14,9 @@
   <!-- Tipografía: Fraunces (display editorial) + Karla (cuerpo) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;700&display=swap" />
+  <!-- Carga asíncrona: no bloquea el primer render (fallback Georgia/system-ui mientras tanto) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;700&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;700&display=swap" /></noscript>
 
   <!-- Open Props: design tokens (spacing, radius, easing) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-props@1/open-props.min.css" crossorigin="anonymous" />
@@ -633,6 +635,47 @@
     }
 
     .empty { color: var(--pico-muted-color); font-style: italic; font-size: var(--font-size-0); }
+
+    /* ════════════════════════════════════════
+       TÁCTIL — tap targets ≥44px (WCAG 2.5.5)
+       Aplica en pantallas táctiles o viewports angostos
+    ════════════════════════════════════════ */
+    @media (pointer: coarse), (max-width: 767px) {
+      /* iOS hace zoom al enfocar inputs con fuente <16px */
+      input, select { font-size: 1rem; }
+
+      .btn-tema { width: 2.75rem; height: 2.75rem; }
+
+      .btn-del, .btn-pagador {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        display: grid;
+        place-items: center;
+      }
+
+      .chip {
+        min-height: 2.75rem;
+        padding-inline: var(--size-4);
+      }
+
+      header nav button { min-height: 2.75rem; }
+      /* El área táctil del switch es todo el label */
+      header nav label { min-height: 2.75rem; }
+      header nav input[type="checkbox"][role="switch"] { width: 2.5rem; height: 1.4rem; }
+
+      .modo-select,
+      .pagador-item-row select,
+      header nav select {
+        min-height: 2.5rem;
+        padding-top: var(--size-1);
+        padding-bottom: var(--size-1);
+      }
+
+      .persona-pagado input { min-height: 2.5rem; }
+      .inp-parte, .split-row input { min-height: 2.5rem; width: 84px; }
+
+      .persona-row { padding-block: var(--size-1); }
+    }
 
     body > footer {
       margin-top: var(--size-9);

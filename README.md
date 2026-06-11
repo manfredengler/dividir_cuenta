@@ -110,6 +110,24 @@ Auditoría con axe-core (WCAG 2 AA) + revisión manual. Resultado previo: 1 viol
 - [x] Migración transparente de estados guardados antiguos (`pagadorItemId: null` por defecto)
 - [x] Verificado E2E con Playwright: ítem de $100 pagado por Ana dividido entre 2 → transferencia "Beto → Ana $50"
 
+### v1.3.0 — UX móvil (mobile-first)
+
+Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + inspección Playwright a 390×844 con datos sembrados. Se detectaron **28 controles por debajo del mínimo táctil** (botones eliminar de 26×26px, selects de 24px de alto, chips de 29px) y CSS render-blocking de fuentes (~880ms).
+
+**Tap targets ≥ 44px (WCAG 2.5.5):**
+- [x] Nuevo bloque `@media (pointer: coarse), (max-width: 767px)` con tamaños táctiles
+- [x] Botones eliminar (×) y pagador (💳): de 26×26 a 44×44
+- [x] Chips de asignación y métodos de liquidación: alto mínimo 44px
+- [x] Selects de modo de división y "Pagado por": alto mínimo 40px
+- [x] Botones e interruptor del header agrandados (el label completo es área táctil del switch)
+- [x] Verificado con Playwright: 0 controles < 40px, sin overflow horizontal
+
+**iOS:**
+- [x] `font-size: 1rem` en inputs/selects en táctil — evita el zoom automático al enfocar campos
+
+**Performance:**
+- [x] Google Fonts con carga asíncrona (`media="print" onload`) — deja de bloquear el primer render (~880ms est.), con `<noscript>` de respaldo
+
 ---
 
 ## Uso local
