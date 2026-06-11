@@ -80,6 +80,27 @@ Divide cuentas grupales de forma equitativa. Archivo único `index.html`, sin se
 - [ ] Pruebas en Safari iOS / Chrome Android
 - [ ] SRI hashes en las dependencias CDN
 
+### v1.1.0 — Accesibilidad y PWA
+
+Auditoría con axe-core (WCAG 2 AA) + revisión manual. Resultado previo: 1 violación seria, 40 reglas ok.
+
+**Correcciones WCAG 2 AA:**
+- [x] **Color contrast** (serious): `--pico-muted-color` claro pasó de `#8a8174` (3.56:1) a `#6b6459` (5.4:1) — afectaba el párrafo hero, los textos de estado vacío y el footer
+- [x] **Skip-link**: enlace "Saltar al contenido" visible al recibir foco teclado (`.skip-link:focus`), apunta a `#contenido-principal`
+
+**Mejoras de experiencia móvil:**
+- [x] `inputmode="decimal"` en todos los campos numéricos de precio/partes/cargos — abre teclado numérico con coma decimal en iOS/Android
+- [x] `inputmode="numeric"` en el campo de propina (entero)
+
+**Metadatos y PWA:**
+- [x] `<link rel="icon">` con SVG inline (÷ verde sobre fondo redondeado) — elimina el ícono genérico del navegador
+- [x] `<meta name="theme-color">` para barra del navegador en móvil (verde en claro, oscuro en dark)
+- [x] `<meta name="apple-mobile-web-app-title">` para el título al agregar a pantalla inicio en iOS
+- [x] `crossorigin` en el `<link rel="preconnect">` de Google Fonts (faltaba en el primero)
+
+**Resiliencia:**
+- [x] `<noscript>` con aviso en rojo cuando JavaScript está deshabilitado
+
 ---
 
 ## Uso local
