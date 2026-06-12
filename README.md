@@ -2,7 +2,7 @@
 
 Divide cuentas grupales de forma equitativa. Archivo único `index.html`, sin servidor, sin build step. Funciona offline y se puede compartir por URL.
 
-**[Ver demo →](https://manfred-engler.github.io/dividir-cuentas/)**
+**[Abrir la app →](https://manfredengler.github.io/dividir_cuenta/)** · **[Documentación →](https://manfredengler.github.io/dividir_cuenta/docs/)**
 
 ---
 
@@ -192,6 +192,14 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 - [x] Eliminado el cuadrado blanco junto a la hamburguesa: era el `::marker` del `li` (`display: list-item` → `display: block; list-style: none`)
 - [x] Sin scroll horizontal: las celdas de tabla en móvil permiten quiebre de línea y usan padding compacto (antes `white-space: nowrap` desbordaba la tabla de saldos)
 - [x] Botón cerrar (✕) de todos los diálogos ampliado a 44×44px con ícono de 1.5rem, hover/focus visible con fondo de acento
+
+### v1.8.0 — Documentación MkDocs y specs actualizadas
+- [x] Sitio de documentación con **MkDocs Material** servido en el mismo GitHub Pages: [/dividir_cuenta/docs/](https://manfredengler.github.io/dividir_cuenta/docs/)
+  - Fuente en `docs-src/`, build comprometido en `docs/` (sin workflow aparte: construir y commitear es el deploy)
+  - Páginas: Inicio, Guía de uso, Arquitectura, Formatos de datos, Extensibilidad
+  - `uvx --with mkdocs-material mkdocs build` para regenerar
+- [x] `specs.md` actualizado al estado real: stack vigente, requisitos EARS nuevos (REQ-02b/c, 03b, 04b, 08b, 09b, 16), casos de uso de partes/%, pagador por ítem, round-trip Excel y compartir nativo
+- [x] Enlace "Documentación" en el footer de la app y en este README (de paso se corrigió la URL de demo, que apuntaba a un repo inexistente)
 
 ---
 

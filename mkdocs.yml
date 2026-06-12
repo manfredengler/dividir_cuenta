@@ -1,0 +1,50 @@
+site_name: Divisor de Cuentas — Documentación
+site_url: https://manfredengler.github.io/dividir_cuenta/docs/
+repo_url: https://github.com/manfredengler/dividir_cuenta
+repo_name: dividir_cuenta
+site_description: Funcionamiento interno y guía de extensibilidad del Divisor de Cuentas.
+site_author: Manfred Engler
+
+# La fuente vive en docs-src/; el build se comete en docs/ y lo sirve
+# el mismo GitHub Pages del proyecto (modo legacy, rama main, raíz).
+docs_dir: docs-src
+site_dir: docs
+
+theme:
+  name: material
+  language: es
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a modo claro
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+
+nav:
+  - Inicio: index.md
+  - Guía de uso: guia-de-uso.md
+  - Arquitectura: arquitectura.md
+  - Formatos de datos: formatos-de-datos.md
+  - Extensibilidad: extensibilidad.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
