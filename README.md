@@ -211,6 +211,11 @@ Diagnóstico con Playwright midiendo `getBoundingClientRect` de todo el DOM a 36
 - [x] Red de seguridad: `html { overflow-x: clip }` — ningún desborde accidental futuro genera scroll de página
 - [x] Verificado a 360px y 320px: `scrollWidth === clientWidth`, cero elementos fuera del documento
 
+### v1.8.2 — Botón "Invitame un café"
+- [x] Badge de Buy Me a Coffee en el footer enlazando a [buymeacoffee.com/manfredengm](https://buymeacoffee.com/manfredengm)
+- [x] Implementación segura: enlace estático + SVG inline propio — **sin el widget oficial ni imágenes de terceros** (cero scripts externos, cero requests por visita, coherente con la promesa de privacidad y sin impacto en performance)
+- [x] `target="_blank"` con `rel="noopener noreferrer"`; tap target 164×44px verificado
+
 ---
 
 ## Uso local

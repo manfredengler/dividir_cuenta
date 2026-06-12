@@ -849,6 +849,31 @@
       text-align: center;
       color: var(--pico-muted-color);
     }
+
+    /* Botón "Invitame un café": enlace estático con SVG inline,
+       sin scripts ni imágenes de terceros (privacidad y performance) */
+    .btn-cafe {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--size-2);
+      min-height: 2.75rem;
+      padding: var(--size-1) var(--size-4);
+      border-radius: var(--radius-round);
+      background: #ffdd00;
+      color: #1c1814;
+      font-weight: 700;
+      font-size: var(--font-size-0);
+      text-decoration: none;
+      border: 1px solid color-mix(in srgb, #1c1814 15%, transparent);
+      transition: transform 0.15s var(--ease-3), box-shadow 0.15s var(--ease-3);
+    }
+    .btn-cafe svg { width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+    .btn-cafe:hover, .btn-cafe:focus-visible {
+      color: #1c1814;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+      text-decoration: none;
+    }
   </style>
 
   <!-- Aplicar tema guardado ANTES del primer render para evitar flash -->
@@ -1328,6 +1353,20 @@
       Hecho por <a href="https://manfredengler.github.io/" target="_blank" rel="noopener">Manfred Engler</a>
       · <a href="docs/">Documentación</a>
     </small>
+    <p style="margin: var(--size-3) 0 0;">
+      <!-- Enlace estático + SVG inline: cero scripts/requests de terceros -->
+      <a class="btn-cafe" href="https://buymeacoffee.com/manfredengm"
+         target="_blank" rel="noopener noreferrer">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
+          <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/>
+          <line x1="6" y1="2" x2="6" y2="4"/>
+          <line x1="10" y1="2" x2="10" y2="4"/>
+          <line x1="14" y1="2" x2="14" y2="4"/>
+        </svg>
+        Invitame un café
+      </a>
+    </p>
   </footer>
 
   <!-- Drawer: menú de opciones (móvil) -->
