@@ -130,6 +130,18 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 - [x] Open Props + Pico.css combinados en un solo request (`cdn.jsdelivr.net/combine/...`) — un round-trip render-blocking menos
 - [x] `preconnect` a `cdn.jsdelivr.net` (faltaba; solo existía para Google Fonts)
 
+### v1.4.0 — Compartir nativo y navbar
+
+**Compartir:**
+- [x] En dispositivos táctiles, el botón Compartir abre el panel nativo del sistema (Web Share API) con WhatsApp, Facebook, Gmail, Telegram y todas las apps instaladas
+- [x] En escritorio se mantiene el copiado al portapapeles (más directo que el diálogo de share de Windows/macOS)
+- [x] Si el usuario cierra el panel no pasa nada; si el share falla por otra razón, cae al portapapeles
+- [x] Ícono SVG de compartir en el botón
+- [x] Verificado con Playwright simulando ambas ramas (`pointer: coarse` y escritorio)
+
+**Navbar:**
+- [x] En pantallas <560px la marca pasa arriba centrada y los controles se reparten en una fila completa debajo (antes quedaban apretados con saltos de línea irregulares)
+
 ---
 
 ## Uso local
