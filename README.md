@@ -151,6 +151,14 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 ### v1.4.2 — Microcopy
 - [x] El switch "Sin dec." pasa a llamarse "Decimales", con lógica invertida: activado = mostrar decimales (el estado guardado `sinDecimales` se mantiene compatible)
 
+### v1.5.0 — QR, footer y navbar móvil
+- [x] **Compartir con código QR**: botón en la navbar que abre un `<dialog>` con el QR del enlace (estado completo de la cuenta)
+  - Generado 100% en el navegador con `qrcode-generator` (sin servicios externos — coherente con la promesa de privacidad)
+  - La librería se carga perezosamente solo al pulsar el botón (no afecta la performance inicial)
+  - Fondo blanco fijo para que escanee bien en tema oscuro; aviso si el estado es demasiado grande para un QR
+- [x] **Footer** con crédito y enlace al portafolio ([manfredengler.github.io](https://manfredengler.github.io/))
+- [x] **Navbar estática en móvil** (<560px): ya no acompaña el scroll, libera espacio vertical de pantalla; en escritorio sigue sticky con blur
+
 ---
 
 ## Uso local

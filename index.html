@@ -273,9 +273,34 @@
     }
     .btn-compartir svg { width: 1em; height: 1em; flex-shrink: 0; }
 
-    /* Navbar compacta en pantallas chicas: marca arriba, controles repartidos abajo */
+    /* QR: el código necesita fondo blanco para escanearse bien en ambos temas */
+    .qr-cont {
+      display: grid;
+      place-items: center;
+      background: #fff;
+      border-radius: var(--radius-3);
+      padding: var(--size-3);
+    }
+    .qr-cont svg { width: min(70vw, 300px); height: auto; display: block; }
+    .qr-ayuda {
+      font-size: var(--font-size-0);
+      color: var(--pico-muted-color);
+      text-align: center;
+      margin: var(--size-3) 0 0;
+    }
+    #dlg-qr article { max-width: 380px; }
+
+    /* Navbar compacta en pantallas chicas: marca arriba, controles repartidos abajo.
+       Estática: no acompaña el scroll para no comerse pantalla. */
     @media (max-width: 560px) {
-      body > header { padding-top: var(--size-2); padding-bottom: var(--size-2); }
+      body > header {
+        position: static;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: var(--pico-background-color);
+        padding-top: var(--size-2);
+        padding-bottom: var(--size-2);
+      }
       header nav { flex-direction: column; align-items: stretch; gap: var(--size-1); }
       header nav ul:last-child {
         width: 100%;
@@ -781,6 +806,17 @@
           </button>
         </li>
         <li>
+          <button type="button" class="btn-tema" @click="mostrarQR()"
+                  aria-label="Compartir con código QR" title="Código QR">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <path d="M14 14h3v3h-3zM21 14v.01M14 21v.01M17.5 17.5h.01M21 18v3h-3"/>
+            </svg>
+          </button>
+        </li>
+        <li>
           <button type="button" class="btn-compartir" @click="compartir()"
                   aria-label="Compartir la cuenta">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1186,8 +1222,24 @@
   </main>
 
   <footer>
-    <small>Divisor de Cuentas — funciona sin conexión · tus datos nunca salen del navegador</small>
+    <small>
+      Divisor de Cuentas — funciona sin conexión · tus datos nunca salen del navegador
+      <br />
+      Hecho por <a href="https://manfredengler.github.io/" target="_blank" rel="noopener">Manfred Engler</a>
+    </small>
   </footer>
+
+  <!-- Diálogo: compartir con código QR -->
+  <dialog id="dlg-qr" @click.self="cerrarQR()">
+    <article>
+      <header>
+        <button type="button" aria-label="Cerrar" rel="prev" @click="cerrarQR()"></button>
+        <strong>Compartir con código QR</strong>
+      </header>
+      <div class="qr-cont" x-html="qrSvg"></div>
+      <p class="qr-ayuda">Escanealo con la cámara del teléfono para abrir la cuenta con todos los datos cargados.</p>
+    </article>
+  </dialog>
 
   <script>
   function app() {
@@ -1210,6 +1262,7 @@
       nuevoItem: { nombre: '', precio: '' },
       copiado: false,
       anuncio: '',
+      qrSvg: '',
       _nextPersonaId: 1,
       _nextItemId: 1,
 
@@ -1437,6 +1490,37 @@
           this.anuncio = '¡Enlace copiado al portapapeles!';
           setTimeout(() => { this.copiado = false; this.anuncio = ''; }, 2500);
         } catch (_) {}
+      },
+
+      // ── Compartir con QR (generado localmente, sin servicios externos) ──
+      async mostrarQR() {
+        if (!window.qrcode) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1/qrcode.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          }).catch(() => {});
+        }
+        if (!window.qrcode) {
+          this.anuncio = 'No se pudo cargar el generador de QR';
+          setTimeout(() => { this.anuncio = ''; }, 2000);
+          return;
+        }
+        try {
+          const qr = window.qrcode(0, 'M');
+          qr.addData(this._urlEstado());
+          qr.make();
+          this.qrSvg = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+          document.getElementById('dlg-qr').showModal();
+        } catch (_) {
+          this.anuncio = 'La cuenta es demasiado grande para un código QR';
+          setTimeout(() => { this.anuncio = ''; }, 2500);
+        }
+      },
+
+      cerrarQR() {
+        document.getElementById('dlg-qr').close();
       },
 
       // ── Liquidación: 3 métodos de saldar diferencias ──
