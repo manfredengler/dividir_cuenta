@@ -753,8 +753,10 @@
         </li>
         <li>
           <label>
-            <input type="checkbox" role="switch" x-model="sinDecimales" />
-            Sin dec.
+            <input type="checkbox" role="switch"
+                   :checked="!sinDecimales"
+                   @change="sinDecimales = !$event.target.checked" />
+            Decimales
           </label>
         </li>
         <li>

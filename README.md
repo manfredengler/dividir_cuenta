@@ -148,6 +148,9 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 - [x] Hover con inversión de color (fondo esmeralda, ícono blanco)
 - [x] Verificados los tres estados en tema claro y oscuro con capturas Playwright
 
+### v1.4.2 — Microcopy
+- [x] El switch "Sin dec." pasa a llamarse "Decimales", con lógica invertida: activado = mostrar decimales (el estado guardado `sinDecimales` se mantiene compatible)
+
 ---
 
 ## Uso local
