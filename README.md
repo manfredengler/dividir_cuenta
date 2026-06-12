@@ -201,6 +201,16 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 - [x] `specs.md` actualizado al estado real: stack vigente, requisitos EARS nuevos (REQ-02b/c, 03b, 04b, 08b, 09b, 16), casos de uso de partes/%, pagador por ítem, round-trip Excel y compartir nativo
 - [x] Enlace "Documentación" en el footer de la app y en este README (de paso se corrigió la URL de demo, que apuntaba a un repo inexistente)
 
+### v1.8.1 — Fin del scroll horizontal en móvil
+
+Diagnóstico con Playwright midiendo `getBoundingClientRect` de todo el DOM a 360px y 320px con contenido extremo (nombres largos, todas las secciones visibles). Tres culpables reales:
+
+- [x] **Input file oculto (Importar Excel)**: los selectores `input:not(...)` de Pico superan en especificidad a `.sr-only` y lo estiraban a ancho completo → `.sr-only` ahora usa `!important` en sus propiedades críticas
+- [x] **Tarjetas de ítem**: con nombres largos el contenedor del nombre no se encogía (`min-width: auto` de flex) y empujaba los botones Editar/× fuera del viewport → `min-width: 0` + `overflow-wrap: anywhere` (también aplicado a `.persona-nombre`)
+- [x] **Badge "💳 paga la cuenta"** en el resumen: el header de la tarjeta no quebraba con nombres largos → `flex-wrap: wrap`
+- [x] Red de seguridad: `html { overflow-x: clip }` — ningún desborde accidental futuro genera scroll de página
+- [x] Verificado a 360px y 320px: `scrollWidth === clientWidth`, cero elementos fuera del documento
+
 ---
 
 ## Uso local

@@ -9,6 +9,11 @@ Cosas que ya nos mordieron una vez. Leer antes de tocar el área correspondiente
 - **Especificidad Pico:** `header nav button` (3 elementos) le gana a `.btn-tema` (1 clase). Si un override no aplica, revisar especificidad contra los selectores de elemento de Pico antes de sospechar de la cascada.
 - **El botón cerrar de Pico (`button[rel=prev]`) es diminuto** — ya está corregido globalmente a 44×44px; los diálogos nuevos lo heredan gratis si usan `<button rel="prev">` en el header del `article`.
 - **Contraste:** `--pico-muted-color` se sobreescribe en los TRES bloques de tema (light, dark, y el `@media prefers-color-scheme` para auto). Cambiar un color de tema = tocar los 3 lugares.
+- **Scroll horizontal en móvil — los 3 patrones que lo causaron (v1.8.1):**
+  1. `.sr-only` sin `!important` pierde contra `input:not(...)` de Pico → el input file oculto quedaba a ancho completo.
+  2. Hijos de flex no se encogen por defecto (`min-width: auto`): textos largos empujan botones fuera del viewport. Antídoto: `min-width: 0` + `overflow-wrap: anywhere` en el hijo que contiene texto.
+  3. Headers flex sin `flex-wrap: wrap` con badges `nowrap`.
+  Para diagnosticar: iterar `getBoundingClientRect()` de todo el DOM filtrando los que exceden `clientWidth` y no están dentro de un ancestro con `overflow-x` scroll/auto/clip. Probar a 320px con nombres largos. Hay `html { overflow-x: clip }` como red de seguridad, pero arreglar siempre la causa raíz.
 
 ## Alpine.js
 

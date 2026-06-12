@@ -133,11 +133,19 @@
     }
     .skip-link:focus { top: var(--size-3); }
 
+    /* !important: Pico estiliza inputs con selectores de mayor especificidad
+       (input:not([type=...])) que ensanchaban el input file oculto a 100%,
+       generando scroll horizontal en móvil. */
     .sr-only {
-      position: absolute; width: 1px; height: 1px;
-      padding: 0; margin: -1px; overflow: hidden;
+      position: absolute !important;
+      width: 1px !important; height: 1px !important;
+      padding: 0 !important; margin: -1px !important;
+      overflow: hidden !important;
       clip: rect(0,0,0,0); white-space: nowrap; border: 0;
     }
+
+    /* Red de seguridad: ningún desborde accidental genera scroll de página */
+    html { overflow-x: clip; }
 
     body {
       font-family: var(--dc-fuente-cuerpo);
@@ -482,7 +490,7 @@
       border: 1px solid color-mix(in srgb, var(--pico-primary) 25%, transparent);
     }
     .persona-row:hover .persona-avatar { background: var(--pico-card-background-color); }
-    .persona-nombre { flex: 1; font-weight: 700; }
+    .persona-nombre { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 700; }
     .persona-pagado {
       display: flex; align-items: center; gap: var(--size-2);
       font-size: var(--font-size-0);
@@ -625,6 +633,13 @@
       align-items: center; gap: var(--size-2);
       margin-bottom: var(--size-3);
     }
+    /* El nombre debe encogerse y quebrar: sin esto, un ítem largo
+       empuja los botones fuera del viewport (scroll horizontal) */
+    .item-card-header > div:first-child {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
     .item-precio {
       color: var(--pico-primary);
       font-weight: 700;
@@ -708,9 +723,11 @@
       background: transparent;
       border-bottom: 1px solid var(--pico-muted-border-color);
       display: flex; align-items: center; gap: var(--size-2);
+      flex-wrap: wrap; /* el badge 💳 baja de línea con nombres largos */
       font-family: var(--dc-fuente-display);
       font-size: 1.05rem;
     }
+    .personas-grid article > header strong { min-width: 0; overflow-wrap: anywhere; }
 
     .resumen-row {
       display: flex; justify-content: space-between;
