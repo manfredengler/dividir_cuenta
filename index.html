@@ -290,8 +290,8 @@
     }
     #dlg-qr article { max-width: 380px; }
 
-    /* Navbar compacta en pantallas chicas: marca arriba, controles repartidos abajo.
-       Estática: no acompaña el scroll para no comerse pantalla. */
+    /* ── Navbar móvil: marca + hamburguesa; controles en drawer lateral ── */
+    .li-menu { display: none; }
     @media (max-width: 560px) {
       body > header {
         position: static;
@@ -301,13 +301,95 @@
         padding-top: var(--size-2);
         padding-bottom: var(--size-2);
       }
-      header nav { flex-direction: column; align-items: stretch; gap: var(--size-1); }
-      header nav ul:last-child {
-        width: 100%;
-        justify-content: space-between;
-        gap: var(--size-1);
+      header nav ul:last-child > li { display: none; }
+      header nav ul:last-child > li.li-menu { display: list-item; }
+      .marca { font-size: 1.05rem; }
+    }
+
+    /* ── Drawer lateral (menú móvil) ── */
+    .drawer {
+      margin: 0 0 0 auto;
+      padding: 0;
+      border: none;
+      height: 100dvh;
+      max-height: 100dvh;
+      width: min(82vw, 320px);
+      view-transition-name: dc-drawer;
+    }
+    .drawer article {
+      height: 100%;
+      margin: 0;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--size-4);
+      overflow-y: auto;
+    }
+    .drawer label { font-weight: 700; font-size: var(--font-size-0); }
+    .drawer select { margin-top: var(--size-1); }
+    .drawer .drawer-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: var(--size-2);
+      width: 100%;
+      margin: 0;
+    }
+    .drawer .drawer-btn svg { width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+
+    /* ── Editor de ítem fullscreen (móvil) ── */
+    .editor-item { view-transition-name: dc-editor; }
+    .btn-editar {
+      margin: 0;
+      padding: var(--size-1) var(--size-3);
+      font-size: var(--font-size-0);
+      white-space: nowrap;
+    }
+    .item-resumen {
+      font-size: var(--font-size-0);
+      color: var(--pico-muted-color);
+      margin: 0;
+    }
+    .btn-eliminar {
+      background: transparent;
+      border: 1px solid var(--dc-rojo);
+      color: var(--dc-rojo);
+    }
+    .btn-eliminar:hover { background: var(--dc-rojo-suave); }
+    @media (max-width: 767px) {
+      .editor-item {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100dvh;
+        max-height: 100dvh;
+        margin: 0;
+        padding: 0;
+        border: none;
       }
-      .marca { font-size: 1.05rem; justify-content: center; }
+      .editor-item article {
+        width: 100%;
+        min-height: 100dvh;
+        margin: 0;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .editor-item article > footer { margin-top: auto; }
+    }
+
+    /* ── View Transitions: drawer desliza desde la derecha, editor desde abajo ── */
+    @keyframes dc-desde-derecha { from { transform: translateX(100%); } }
+    @keyframes dc-hacia-derecha { to   { transform: translateX(100%); } }
+    @keyframes dc-desde-abajo   { from { transform: translateY(100%); } }
+    @keyframes dc-hacia-abajo   { to   { transform: translateY(100%); } }
+    ::view-transition-new(dc-drawer) { animation: dc-desde-derecha 0.28s var(--ease-out-3); }
+    ::view-transition-old(dc-drawer) { animation: dc-hacia-derecha 0.22s var(--ease-3); }
+    ::view-transition-new(dc-editor) { animation: dc-desde-abajo 0.3s var(--ease-out-3); }
+    ::view-transition-old(dc-editor) { animation: dc-hacia-abajo 0.25s var(--ease-3); }
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-group(*),
+      ::view-transition-old(*),
+      ::view-transition-new(*) { animation: none !important; }
     }
 
     /* ════════════════════════════════════════
@@ -766,6 +848,14 @@
         </li>
       </ul>
       <ul>
+        <li class="li-menu">
+          <button type="button" class="btn-tema" @click="abrirMenu()"
+                  aria-label="Abrir menú de opciones" title="Menú">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </li>
         <li>
           <label for="sel-moneda" class="sr-only">Moneda</label>
           <select id="sel-moneda" x-model="moneda">
@@ -988,7 +1078,7 @@
         </figure>
       </div>
 
-      <!-- ── MÓVIL: tarjetas con chips ── -->
+      <!-- ── MÓVIL: tarjetas compactas; la edición vive en un modal fullscreen ── -->
       <div class="vista-cards" x-show="items.length > 0" style="margin-top: var(--size-3);">
         <template x-for="item in items" :key="item.id">
           <div class="item-card">
@@ -997,59 +1087,14 @@
                 <strong x-text="item.nombre"></strong>
                 <span class="item-precio" x-text="fmt(item.precio)"></span>
               </div>
-              <select class="modo-select" x-model="item.modo"
-                      @change="alCambiarModo(item)"
-                      :aria-label="`Modo de división de ${item.nombre}`">
-                <option value="igual">÷ igual</option>
-                <option value="partes">partes</option>
-                <option value="pct">%</option>
-              </select>
+              <button type="button" class="btn-editar"
+                      @click="abrirEditorItem(item)"
+                      :aria-label="`Editar ${item.nombre}`">Editar</button>
               <button type="button" class="btn-del"
                       @click="eliminarItem(item.id)"
                       :aria-label="`Eliminar ${item.nombre}`">×</button>
             </div>
-            <label class="pagador-item-row" x-show="personas.length > 0">
-              <span class="split-unidad">Pagado por</span>
-              <select class="modo-select"
-                      :value="item.pagadorItemId ?? ''"
-                      @change="item.pagadorItemId = $event.target.value === '' ? null : Number($event.target.value)">
-                <option value="">—</option>
-                <template x-for="p in personas" :key="p.id">
-                  <option :value="p.id" x-text="p.nombre" :selected="item.pagadorItemId === p.id"></option>
-                </template>
-              </select>
-            </label>
-            <div class="chips" x-show="item.modo === 'igual' && personas.length > 0">
-              <template x-for="p in personas" :key="p.id">
-                <button type="button" class="chip"
-                        :aria-pressed="estaAsignado(item.id, p.id).toString()"
-                        @click="toggleAsignacion(item.id, p.id)"
-                        x-text="p.nombre">
-                </button>
-              </template>
-            </div>
-            <div class="split-grid" x-show="item.modo !== 'igual' && personas.length > 0">
-              <template x-for="p in personas" :key="p.id">
-                <label class="split-row">
-                  <span x-text="p.nombre"></span>
-                  <span>
-                    <input type="number" min="0" step="any"
-                           :value="parteDe(item, p.id)"
-                           @input="setParte(item, p.id, $event.target.value)"
-                           :placeholder="item.modo === 'pct' ? '%' : '0'"
-                           inputmode="decimal" />
-                    <span class="split-unidad" x-text="item.modo === 'pct' ? '%' : 'pt'"></span>
-                  </span>
-                </label>
-              </template>
-            </div>
-            <p class="pct-aviso"
-               x-show="item.modo === 'pct' && personas.length > 0"
-               :class="Math.abs(sumaPct(item) - 100) < 0.01 ? 'ok' : 'error'"
-               x-text="`Asignado: ${Math.round(sumaPct(item) * 100) / 100}% de 100%`"></p>
-            <p class="empty" x-show="personas.length === 0" style="margin: 0;">
-              Sin participantes asignados
-            </p>
+            <p class="item-resumen" x-text="resumenItem(item)"></p>
           </div>
         </template>
       </div>
@@ -1247,6 +1292,135 @@
     </small>
   </footer>
 
+  <!-- Drawer: menú de opciones (móvil) -->
+  <dialog id="dlg-menu" class="drawer" @click.self="cerrarMenu()">
+    <article>
+      <header>
+        <button type="button" aria-label="Cerrar menú" rel="prev" @click="cerrarMenu()"></button>
+        <strong>Opciones</strong>
+      </header>
+      <label for="sel-moneda-m">
+        Moneda
+        <select id="sel-moneda-m" x-model="moneda">
+          <option value="$">$ Peso</option>
+          <option value="€">€ Euro</option>
+          <option value="S/.">S/. Sol</option>
+          <option value="£">£ Libra</option>
+          <option value="R$">R$ Real</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" role="switch"
+               :checked="!sinDecimales"
+               @change="sinDecimales = !$event.target.checked" />
+        Decimales
+      </label>
+      <button type="button" class="drawer-btn" @click="cicloTema()">
+        <svg x-show="tema === 'auto'" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/>
+        </svg>
+        <svg x-show="tema === 'light'" x-cloak aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg x-show="tema === 'dark'" x-cloak aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <span x-text="`Tema: ${etiquetaTema()}`"></span>
+      </button>
+      <button type="button" class="drawer-btn" @click="cerrarMenu(); mostrarQR()">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <path d="M14 14h3v3h-3zM21 14v.01M14 21v.01M17.5 17.5h.01M21 18v3h-3"/>
+        </svg>
+        Código QR
+      </button>
+      <button type="button" class="drawer-btn" @click="cerrarMenu(); compartir()">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>
+        </svg>
+        Compartir
+      </button>
+    </article>
+  </dialog>
+
+  <!-- Editor de ítem fullscreen (móvil) -->
+  <dialog id="dlg-item" class="editor-item" @close="itemEdit = null">
+    <template x-if="itemEdit">
+      <article>
+        <header>
+          <button type="button" aria-label="Cerrar editor" rel="prev" @click="cerrarEditorItem()"></button>
+          <strong x-text="itemEdit.nombre"></strong>
+          <span class="item-precio" x-text="fmt(itemEdit.precio)"></span>
+        </header>
+
+        <label>
+          División
+          <select x-model="itemEdit.modo" @change="alCambiarModo(itemEdit)">
+            <option value="igual">÷ partes iguales</option>
+            <option value="partes">por partes</option>
+            <option value="pct">por porcentaje</option>
+          </select>
+        </label>
+
+        <label>
+          Pagado por
+          <select :value="itemEdit.pagadorItemId ?? ''"
+                  @change="itemEdit.pagadorItemId = $event.target.value === '' ? null : Number($event.target.value)">
+            <option value="">—</option>
+            <template x-for="p in personas" :key="p.id">
+              <option :value="p.id" x-text="p.nombre" :selected="itemEdit.pagadorItemId === p.id"></option>
+            </template>
+          </select>
+        </label>
+
+        <fieldset x-show="itemEdit.modo === 'igual'" style="margin: 0;">
+          <legend style="font-weight: 700; font-size: var(--font-size-0);">Quiénes consumieron</legend>
+          <div class="chips">
+            <template x-for="p in personas" :key="p.id">
+              <button type="button" class="chip"
+                      :aria-pressed="estaAsignado(itemEdit.id, p.id).toString()"
+                      @click="toggleAsignacion(itemEdit.id, p.id)"
+                      x-text="p.nombre">
+              </button>
+            </template>
+          </div>
+        </fieldset>
+
+        <div class="split-grid" x-show="itemEdit.modo !== 'igual'">
+          <template x-for="p in personas" :key="p.id">
+            <label class="split-row">
+              <span x-text="p.nombre"></span>
+              <span>
+                <input type="number" min="0" step="any"
+                       :value="parteDe(itemEdit, p.id)"
+                       @input="setParte(itemEdit, p.id, $event.target.value)"
+                       :placeholder="itemEdit.modo === 'pct' ? '%' : '0'"
+                       inputmode="decimal" />
+                <span class="split-unidad" x-text="itemEdit.modo === 'pct' ? '%' : 'pt'"></span>
+              </span>
+            </label>
+          </template>
+        </div>
+
+        <p class="pct-aviso"
+           x-show="itemEdit.modo === 'pct'"
+           :class="Math.abs(sumaPct(itemEdit) - 100) < 0.01 ? 'ok' : 'error'"
+           x-text="`Asignado: ${Math.round(sumaPct(itemEdit) * 100) / 100}% de 100%`"></p>
+
+        <footer>
+          <button type="button" class="btn-eliminar"
+                  @click="eliminarItem(itemEdit.id); cerrarEditorItem()">Eliminar ítem</button>
+          <button type="button" @click="cerrarEditorItem()">Listo</button>
+        </footer>
+      </article>
+    </template>
+  </dialog>
+
   <!-- Diálogo: compartir con código QR -->
   <dialog id="dlg-qr" @click.self="cerrarQR()">
     <article>
@@ -1281,6 +1455,7 @@
       copiado: false,
       anuncio: '',
       qrSvg: '',
+      itemEdit: null,
       _nextPersonaId: 1,
       _nextItemId: 1,
 
@@ -1539,6 +1714,48 @@
 
       cerrarQR() {
         document.getElementById('dlg-qr').close();
+      },
+
+      // ── View Transitions: animar apertura/cierre si el navegador lo soporta ──
+      _conTransicion(fn) {
+        if (document.startViewTransition
+            && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          document.startViewTransition(fn);
+        } else {
+          fn();
+        }
+      },
+
+      // ── Menú lateral (móvil) ──
+      abrirMenu()  { this._conTransicion(() => document.getElementById('dlg-menu').showModal()); },
+      cerrarMenu() { this._conTransicion(() => document.getElementById('dlg-menu').close()); },
+
+      // ── Editor de ítem fullscreen (móvil) ──
+      abrirEditorItem(item) {
+        this.itemEdit = item;
+        this.$nextTick(() =>
+          this._conTransicion(() => document.getElementById('dlg-item').showModal()));
+      },
+
+      cerrarEditorItem() {
+        this._conTransicion(() => document.getElementById('dlg-item').close());
+      },
+
+      resumenItem(item) {
+        const nom = id => this.personas.find(p => p.id === Number(id))?.nombre ?? '?';
+        const modo = item.modo || 'igual';
+        let div;
+        if (modo === 'igual') {
+          div = item.asignados.length
+            ? `÷ igual entre ${item.asignados.map(nom).join(', ')}`
+            : 'Sin asignar';
+        } else {
+          const entradas = Object.entries(item.partes || {}).filter(([, v]) => (parseFloat(v) || 0) > 0);
+          div = entradas.length
+            ? entradas.map(([id, v]) => `${nom(id)} ${v}${modo === 'pct' ? '%' : 'pt'}`).join(', ')
+            : 'Sin asignar';
+        }
+        return div + (item.pagadorItemId != null ? ` · pagó ${nom(item.pagadorItemId)}` : '');
       },
 
       // ── Excel (SheetJS, carga perezosa) ──

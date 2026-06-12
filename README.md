@@ -170,6 +170,24 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 - [x] SheetJS (`xlsx`) cargado perezosamente solo al usar la función — no afecta la performance inicial
 - [x] Verificado round-trip con Playwright: exportar → vaciar estado → importar produce totales idénticos (con división igual, por partes y por %)
 
+### v1.7.0 — Sidebar móvil y editor de ítems fullscreen
+
+**Navbar → drawer lateral (<560px):**
+- [x] La navbar móvil queda solo con la marca y un botón hamburguesa
+- [x] Los controles (moneda, decimales, tema, QR, compartir) viven en un drawer lateral derecho (`<dialog>` nativo: focus trap y Esc gratis)
+- [x] Mismo estado Alpine que los controles de escritorio — siempre sincronizados
+- [x] Cierre tocando el fondo oscurecido o con el botón ✕
+
+**Edición de consumos → modal fullscreen (móvil):**
+- [x] Las tarjetas de ítem son ahora compactas: nombre, precio, resumen legible de la división ("÷ igual entre Ana, Beto · pagó Ana") y botón Editar
+- [x] El botón Editar abre un modal a pantalla completa con toda la edición: modo de división, pagado por, chips de asignación, partes/%
+- [x] Botón "Eliminar ítem" con estilo destructivo (rojo) separado de "Listo"
+
+**CSS View Transitions:**
+- [x] Apertura/cierre animados con `document.startViewTransition`: el drawer desliza desde la derecha, el editor desde abajo (`view-transition-name` dedicados)
+- [x] Fallback transparente en navegadores sin soporte y animaciones desactivadas con `prefers-reduced-motion`
+- [x] Verificado con Playwright a 390×844: hamburguesa visible, controles ocultos, drawer y editor abren, modal ocupa el viewport completo y los chips editan el estado real
+
 ---
 
 ## Uso local
