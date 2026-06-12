@@ -1219,6 +1219,24 @@
       </ol>
     </section>
 
+    <!-- ══════════════════════════════════════
+         EXPORTAR / IMPORTAR
+    ══════════════════════════════════════ -->
+    <section aria-labelledby="h-datos">
+      <h2 id="h-datos">Exportar e importar</h2>
+      <p class="metodo-desc">
+        Descargá la cuenta como Excel (participantes, consumos, configuración y resumen)
+        o restaurala desde un archivo exportado antes.
+      </p>
+      <div class="form-inline">
+        <button type="button" @click="exportarExcel()">Descargar Excel</button>
+        <button type="button" @click="$refs.archivoExcel.click()">Importar Excel</button>
+        <input type="file" x-ref="archivoExcel" class="sr-only"
+               accept=".xlsx,.xls" tabindex="-1" aria-hidden="true"
+               @change="importarExcel($event)" />
+      </div>
+    </section>
+
   </main>
 
   <footer>
@@ -1521,6 +1539,151 @@
 
       cerrarQR() {
         document.getElementById('dlg-qr').close();
+      },
+
+      // ── Excel (SheetJS, carga perezosa) ──
+      async _cargarXLSX() {
+        if (window.XLSX) return true;
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+          s.onload = res; s.onerror = rej;
+          document.head.appendChild(s);
+        }).catch(() => {});
+        return !!window.XLSX;
+      },
+
+      _avisar(msg, ms = 2500) {
+        this.anuncio = msg;
+        setTimeout(() => { this.anuncio = ''; }, ms);
+      },
+
+      _wbExportar() {
+        const X = window.XLSX;
+        const r2 = v => Math.round((v ?? 0) * 100) / 100;
+        const wb = X.utils.book_new();
+
+        const pRows = this.personas.map(p => ({
+          'Nombre': p.nombre,
+          'Pagó al local': parseFloat(p.pagado) || 0,
+          'Paga la cuenta': p.id === this.pagadorId ? 'SI' : '',
+        }));
+        X.utils.book_append_sheet(wb, X.utils.json_to_sheet(pRows), 'Participantes');
+
+        const cRows = this.items.map(it => {
+          const row = {
+            'Ítem': it.nombre,
+            'Precio': parseFloat(it.precio) || 0,
+            'División': it.modo || 'igual',
+            'Pagado por': this.personas.find(p => p.id === it.pagadorItemId)?.nombre ?? '',
+          };
+          for (const p of this.personas) {
+            row[p.nombre] = (it.modo || 'igual') === 'igual'
+              ? (it.asignados.includes(p.id) ? 'x' : '')
+              : (it.partes?.[p.id] ?? '');
+          }
+          return row;
+        });
+        X.utils.book_append_sheet(wb, X.utils.json_to_sheet(cRows), 'Consumos');
+
+        const conf = [
+          { 'Opción': 'Propina %',           'Valor': this.propinaPct },
+          { 'Opción': 'Otros cargos',        'Valor': this.cargosExtra },
+          { 'Opción': 'Moneda',              'Valor': this.moneda },
+          { 'Opción': 'Sin decimales',       'Valor': this.sinDecimales ? 'SI' : 'NO' },
+          { 'Opción': 'Método liquidación',  'Valor': this.metodoLiquidacion },
+        ];
+        X.utils.book_append_sheet(wb, X.utils.json_to_sheet(conf), 'Config');
+
+        const res = this.resumen;
+        const rRows = this.personas.map(p => ({
+          'Nombre': p.nombre,
+          'Consumo': r2(res.subtotales[p.id]),
+          'Propina': r2(res.propinaDesglose[p.id]),
+          'Cargos': r2(res.cargoDesglose[p.id]),
+          'Total a pagar': r2(res.totales[p.id]),
+          'Pagó': r2(res.pagosEfectivos[p.id]),
+          'Balance': r2((res.totales[p.id] ?? 0) - (res.pagosEfectivos[p.id] ?? 0)),
+        }));
+        X.utils.book_append_sheet(wb, X.utils.json_to_sheet(rRows), 'Resumen');
+
+        return wb;
+      },
+
+      async exportarExcel() {
+        if (!await this._cargarXLSX()) return this._avisar('No se pudo cargar el módulo de Excel');
+        window.XLSX.writeFile(this._wbExportar(), 'divisor-de-cuentas.xlsx');
+        this._avisar('Excel descargado');
+      },
+
+      async importarExcel(ev) {
+        const file = ev.target.files?.[0];
+        ev.target.value = '';
+        if (!file) return;
+        if (!await this._cargarXLSX()) return this._avisar('No se pudo cargar el módulo de Excel');
+        try {
+          const X = window.XLSX;
+          const wb = X.read(await file.arrayBuffer());
+          const hoja = n => wb.Sheets[n] ? X.utils.sheet_to_json(wb.Sheets[n]) : [];
+
+          const pRows = hoja('Participantes');
+          if (!pRows.length) throw new Error('sin participantes');
+
+          const personas = [];
+          const porNombre = {};
+          let pagadorId = null;
+          let pid = 1;
+          for (const row of pRows) {
+            const nombre = String(row['Nombre'] ?? '').trim();
+            if (!nombre) continue;
+            const p = { id: pid++, nombre, pagado: parseFloat(row['Pagó al local']) || 0 };
+            personas.push(p);
+            porNombre[nombre.toLowerCase()] = p.id;
+            if (String(row['Paga la cuenta'] ?? '').trim().toUpperCase().startsWith('S')) pagadorId = p.id;
+          }
+          if (!personas.length) throw new Error('sin participantes');
+
+          const items = [];
+          let iid = 1;
+          for (const row of hoja('Consumos')) {
+            const nombre = String(row['Ítem'] ?? row['Item'] ?? '').trim();
+            const precio = parseFloat(row['Precio']);
+            if (!nombre || !(precio > 0)) continue;
+            const modo = ['igual', 'partes', 'pct'].includes(row['División']) ? row['División'] : 'igual';
+            const item = {
+              id: iid++, nombre, precio, modo,
+              partes: {}, asignados: [],
+              pagadorItemId: porNombre[String(row['Pagado por'] ?? '').trim().toLowerCase()] ?? null,
+            };
+            for (const p of personas) {
+              const v = row[p.nombre];
+              if (v === undefined || v === '') continue;
+              if (modo === 'igual') {
+                if (String(v).trim()) item.asignados.push(p.id);
+              } else {
+                const n = parseFloat(v);
+                if (n > 0) item.partes[p.id] = n;
+              }
+            }
+            items.push(item);
+          }
+
+          const conf = {};
+          for (const row of hoja('Config')) conf[row['Opción']] = row['Valor'];
+
+          this._cargarEstado({
+            personas, items, pagadorId,
+            propinaPct: parseFloat(conf['Propina %']) || 0,
+            cargosExtra: parseFloat(conf['Otros cargos']) || 0,
+            moneda: conf['Moneda'] || this.moneda,
+            sinDecimales: String(conf['Sin decimales'] ?? '').toUpperCase().startsWith('S'),
+            metodoLiquidacion: ['minimo', 'central', 'proporcional'].includes(conf['Método liquidación'])
+              ? conf['Método liquidación'] : 'minimo',
+          });
+          this._avisar(`Cuenta importada: ${personas.length} participantes, ${items.length} consumos`);
+        } catch (_) {
+          this._avisar('El archivo no es un Excel válido del Divisor de Cuentas');
+        }
       },
 
       // ── Liquidación: 3 métodos de saldar diferencias ──

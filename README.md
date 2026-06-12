@@ -159,6 +159,17 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 - [x] **Footer** con crédito y enlace al portafolio ([manfredengler.github.io](https://manfredengler.github.io/))
 - [x] **Navbar estática en móvil** (<560px): ya no acompaña el scroll, libera espacio vertical de pantalla; en escritorio sigue sticky con blur
 
+### v1.6.0 — Exportar e importar Excel
+- [x] Nueva sección "Exportar e importar" con botones Descargar / Importar Excel
+- [x] **Exportación** a `.xlsx` con 4 hojas:
+  - `Participantes`: nombre, pagó al local, quién paga la cuenta
+  - `Consumos`: ítem, precio, modo de división, pagado por, y una columna por persona (✗ asignado, o número de partes/%)
+  - `Config`: propina, cargos, moneda, decimales, método de liquidación
+  - `Resumen`: consumo, propina, cargos, total, pagó y balance por persona (para compartir el resultado)
+- [x] **Importación** desde un Excel exportado: reconstruye participantes, consumos (los 3 modos de división), pagadores por ítem y configuración; valida el archivo y avisa por `aria-live` cuántos registros cargó
+- [x] SheetJS (`xlsx`) cargado perezosamente solo al usar la función — no afecta la performance inicial
+- [x] Verificado round-trip con Playwright: exportar → vaciar estado → importar produce totales idénticos (con división igual, por partes y por %)
+
 ---
 
 ## Uso local
