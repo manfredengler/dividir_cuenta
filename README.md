@@ -188,6 +188,11 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 - [x] Fallback transparente en navegadores sin soporte y animaciones desactivadas con `prefers-reduced-motion`
 - [x] Verificado con Playwright a 390×844: hamburguesa visible, controles ocultos, drawer y editor abren, modal ocupa el viewport completo y los chips editan el estado real
 
+### v1.7.1 — Fixes móvil
+- [x] Eliminado el cuadrado blanco junto a la hamburguesa: era el `::marker` del `li` (`display: list-item` → `display: block; list-style: none`)
+- [x] Sin scroll horizontal: las celdas de tabla en móvil permiten quiebre de línea y usan padding compacto (antes `white-space: nowrap` desbordaba la tabla de saldos)
+- [x] Botón cerrar (✕) de todos los diálogos ampliado a 44×44px con ícono de 1.5rem, hover/focus visible con fondo de acento
+
 ---
 
 ## Uso local
