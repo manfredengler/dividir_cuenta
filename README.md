@@ -226,7 +226,7 @@ Ataque a las dos causas reales del Lighthouse Perf 88 (móvil):
 - [x] **CSS bloqueante eliminado**: Open Props + Pico (el combine de jsDelivr, ~940 ms de FCP/LCP estimados) ahora va inlineado en un `<style>` del `<head>` — coherente con la filosofía de archivo único; el gzip de GitHub Pages absorbe los ~19 KB extra. La URL fuente queda comentada en el HTML para futuras actualizaciones
 - [x] **CLS 0.201 → ~0**: el `x-cloak` de `<main>` ocultaba todo el contenido con `display: none` hasta que Alpine arrancaba y el footer saltaba ~1300px. Ahora `main[x-cloak]` usa `visibility: hidden` con `display: block`, reservando el espacio
 - [x] Verificado con Playwright: variables de Pico/Open Props resueltas, cero stylesheets de jsDelivr, motor de cálculo intacto (caso de referencia Beto → Ana $50), axe-core 0 violaciones
-- [x] Lighthouse contra producción tras el deploy (evidencia abajo)
+- [x] Lighthouse móvil contra producción tras el deploy: **Perf 99 / A11y 100 / BP 100 / SEO 100** (antes Perf 88) — FCP 1.1s (antes 2.0s), CLS 0.002 (antes 0.201), TBT 0ms
 
 ---
 

@@ -11,7 +11,7 @@ App de dividir cuentas grupales. **Archivo único `index.html`** (Alpine.js v3 +
 1. **Todo en `index.html`.** No crear archivos JS/CSS aparte. No introducir build step ni framework.
 2. **Privacidad:** los datos nunca salen del navegador. Nada de APIs externas para QR, analytics, etc. Compartir = estado codificado en la URL.
 3. **El estado canónico es el contrato.** Campos nuevos: agregar default en `_cargarEstado()`, sumarlos a `persistir()`, `_urlEstado()` y al export/import Excel. Nunca renombrar campos existentes (rompe localStorage/URLs/Excels viejos).
-4. **Dependencias nuevas: carga perezosa** (patrón de `_cargarXLSX()` / `mostrarQR()`). Jamás `<script src>` bloqueante en `<head>` — el presupuesto de performance está al límite (Lighthouse perf 86, lo domina el CSS bloqueante).
+4. **Dependencias nuevas: carga perezosa** (patrón de `_cargarXLSX()` / `mostrarQR()`). Jamás `<script src>` ni `<link rel="stylesheet">` bloqueante en `<head>` — el CSS de Pico+Open Props va inlineado desde v1.9.0 (Lighthouse perf 99; no introducir regresiones).
 5. **Toda feature debe funcionar en ambas vistas:** tabla escritorio (≥768px) **y** editor móvil fullscreen (<768px). Controles duplicados comparten el mismo `x-model` — duplicar markup está bien, duplicar estado no.
 6. **Accesibilidad no negociable:** WCAG AA (axe-core debe dar 0 violaciones), tap targets ≥44px en táctil, `aria-label` en todo control, anuncios vía `this._avisar()` (región `aria-live`).
 7. **Español** en UI, código (nombres de funciones/variables), commits y docs.

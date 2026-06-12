@@ -2,6 +2,12 @@
 
 Cosas que ya nos mordieron una vez. Leer antes de tocar el área correspondiente.
 
+## Performance
+
+- **El CSS de Pico+Open Props va inlineado en el `<head>`** (v1.9.0, Perf 88→99): para actualizarlo, re-descargar la URL comentada sobre ese `<style>` y reemplazar su contenido. No volver a un `<link>` bloqueante.
+- **`main[x-cloak]` usa `visibility: hidden` (no `display: none`)**: reserva el espacio del main mientras Alpine arranca; con display:none el footer saltaba ~1300px (CLS 0.201).
+- Línea base Lighthouse móvil (prod): **Perf 99 / A11y 100 / BP 100 / SEO 100**. No publicar regresiones.
+
 ## CSS / Layout
 
 - **`display: list-item` dibuja el `::marker`** aunque el `ul` padre tenga `list-style: none`. Al mostrar/ocultar `li` por media query usar `display: block; list-style: none;` (bug del "cuadrado blanco" junto a la hamburguesa, v1.7.1).
@@ -46,7 +52,6 @@ Cosas que ya nos mordieron una vez. Leer antes de tocar el área correspondiente
 
 ## Pendientes conocidos (ideas a futuro)
 
-- Performance 86: el paso siguiente es **inlinear el CSS de Pico+Open Props** en el HTML (~19KB, coherente con filosofía de archivo único, pierde caché CDN).
-- SRI hashes en los CDN (pendiente del spec original; complicado con `@1`/`@2` flotantes — requeriría pinear versiones exactas).
+- SRI hashes en los CDN (pendiente del spec original; complicado con `@1`/`@2` flotantes — requeriría pinear versiones exactas). Tras inlinear el CSS (v1.9.0) solo queda Alpine en jsDelivr.
 - Pruebas reales en Safari iOS / Chrome Android (solo se verificó con emulación).
 - PWA completa (manifest + service worker) para instalar y usar offline real.

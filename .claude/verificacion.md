@@ -45,7 +45,7 @@ npx -y lighthouse https://manfredengler.github.io/dividir_cuenta/ \
 # parsear lh.json con python; borrar el json al final (está en .gitignore)
 ```
 
-Línea base actual: **Perf 86 / A11y 100 / BP 100 / SEO 100**. No publicar regresiones de las tres últimas.
+Línea base actual: **Perf 99 / A11y 100 / BP 100 / SEO 100**. No publicar regresiones.
 
 ## 5. Publicar
 
