@@ -216,6 +216,11 @@ Diagnóstico con Playwright midiendo `getBoundingClientRect` de todo el DOM a 36
 - [x] Implementación segura: enlace estático + SVG inline propio — **sin el widget oficial ni imágenes de terceros** (cero scripts externos, cero requests por visita, coherente con la promesa de privacidad y sin impacto en performance)
 - [x] `target="_blank"` con `rel="noopener noreferrer"`; tap target 164×44px verificado
 
+### v1.8.3 — Fila de participante legible en móvil
+- [x] **Bug**: en viewports angostos el nombre del participante se partía letra por letra — los controles de ancho fijo de la fila (input "Pagó", 💳, ×, avatar) consumían casi todo el ancho y el nombre (`flex: 1` + `overflow-wrap: anywhere`) quedaba con ~1 carácter
+- [x] **Fix**: bajo 768px la `.persona-row` pasa a grilla de 2 líneas — nombre arriba a ancho completo, controles abajo (input flexible + botones alineados a la derecha); el avatar abarca ambas líneas. Escritorio sin cambios (sigue flex en una línea)
+- [x] Verificado con Playwright a 390px y 320px con nombre extremo ("María Fernanda de los Ángeles"): nombre en una sola línea (263px de ancho a 390px), tap targets 44×44px, cero overflow horizontal, escritorio intacto
+
 ---
 
 ## Uso local

@@ -844,6 +844,29 @@
       .persona-row { padding-block: var(--size-1); }
     }
 
+    /* En viewports angostos la fila de persona pasa a 2 líneas
+       (nombre arriba a ancho completo, controles abajo): los controles
+       fijos dejaban al nombre sin espacio y se partía letra por letra */
+    @media (max-width: 767px) {
+      .persona-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        grid-template-areas:
+          "avatar nombre nombre nombre"
+          "avatar pagado pagador del";
+        column-gap: var(--size-3);
+        row-gap: var(--size-1);
+        align-items: center;
+        padding-block: var(--size-2);
+      }
+      .persona-avatar { grid-area: avatar; }
+      .persona-nombre { grid-area: nombre; }
+      .persona-pagado { grid-area: pagado; }
+      .persona-pagado input { max-width: none; flex: 1; width: 100%; }
+      .persona-row .btn-pagador { grid-area: pagador; justify-self: end; }
+      .persona-row .btn-del { grid-area: del; justify-self: end; }
+    }
+
     body > footer {
       margin-top: var(--size-9);
       text-align: center;
