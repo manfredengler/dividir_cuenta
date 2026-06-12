@@ -142,6 +142,12 @@ Auditoría Lighthouse móvil (Performance 86 / A11y 100 / BP 100 / SEO 100) + in
 **Navbar:**
 - [x] En pantallas <560px la marca pasa arriba centrada y los controles se reparten en una fila completa debajo (antes quedaban apretados con saltos de línea irregulares)
 
+### v1.4.1 — Botón de tema reconocible
+- [x] Glifos unicode (◐ ☀ ☾) reemplazados por íconos SVG nítidos: círculo mitad relleno (auto), sol (claro), luna (oscuro)
+- [x] El botón dejó de ser transparente: ahora tiene fondo de acento suave, borde esmeralda y el ícono en color primario
+- [x] Hover con inversión de color (fondo esmeralda, ícono blanco)
+- [x] Verificados los tres estados en tema claro y oscuro con capturas Playwright
+
 ---
 
 ## Uso local

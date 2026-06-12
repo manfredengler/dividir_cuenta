@@ -246,20 +246,25 @@
     }
 
     .btn-tema {
-      background: transparent;
-      border: 1px solid var(--pico-muted-border-color);
-      color: var(--pico-color);
-      width: 2.2rem;
-      height: 2.2rem;
+      background: var(--dc-acento-suave);
+      border: 1px solid color-mix(in srgb, var(--pico-primary) 35%, transparent);
+      color: var(--pico-primary);
+      width: 2.4rem;
+      height: 2.4rem;
       padding: 0;
       display: grid;
       place-items: center;
-      font-size: 1rem;
       border-radius: var(--radius-round);
       box-shadow: none;
-      transition: border-color 0.2s var(--ease-3), transform 0.2s var(--ease-3);
+      transition: border-color 0.2s var(--ease-3), background 0.2s var(--ease-3), transform 0.2s var(--ease-3);
     }
-    .btn-tema:hover { border-color: var(--pico-primary); transform: rotate(15deg); }
+    .btn-tema svg { width: 1.2rem; height: 1.2rem; }
+    .btn-tema:hover {
+      border-color: var(--pico-primary);
+      background: var(--pico-primary);
+      color: var(--pico-primary-inverse);
+      transform: rotate(15deg);
+    }
 
     .btn-compartir {
       display: inline-flex;
@@ -756,8 +761,21 @@
           <button type="button" class="btn-tema"
                   @click="cicloTema()"
                   :aria-label="`Tema: ${etiquetaTema()}. Pulsar para cambiar.`"
-                  :title="`Tema: ${etiquetaTema()}`"
-                  x-text="iconoTema()">
+                  :title="`Tema: ${etiquetaTema()}`">
+            <!-- Auto: círculo mitad relleno -->
+            <svg x-show="tema === 'auto'" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/>
+            </svg>
+            <!-- Claro: sol -->
+            <svg x-show="tema === 'light'" x-cloak aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            <!-- Oscuro: luna -->
+            <svg x-show="tema === 'dark'" x-cloak aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
           </button>
         </li>
         <li>
@@ -1260,10 +1278,6 @@
         this.tema = orden[this.tema] || 'auto';
         this.anuncio = `Tema: ${this.etiquetaTema()}`;
         setTimeout(() => { this.anuncio = ''; }, 1500);
-      },
-
-      iconoTema() {
-        return { auto: '◐', light: '☀', dark: '☾' }[this.tema] || '◐';
       },
 
       etiquetaTema() {
