@@ -221,6 +221,13 @@ Diagnóstico con Playwright midiendo `getBoundingClientRect` de todo el DOM a 36
 - [x] **Fix**: bajo 768px la `.persona-row` pasa a grilla de 2 líneas — nombre arriba a ancho completo, controles abajo (input flexible + botones alineados a la derecha); el avatar abarca ambas líneas. Escritorio sin cambios (sigue flex en una línea)
 - [x] Verificado con Playwright a 390px y 320px con nombre extremo ("María Fernanda de los Ángeles"): nombre en una sola línea (263px de ancho a 390px), tap targets 44×44px, cero overflow horizontal, escritorio intacto
 
+### v1.9.0 — Performance: CSS inlineado y CLS ~0
+Ataque a las dos causas reales del Lighthouse Perf 88 (móvil):
+- [x] **CSS bloqueante eliminado**: Open Props + Pico (el combine de jsDelivr, ~940 ms de FCP/LCP estimados) ahora va inlineado en un `<style>` del `<head>` — coherente con la filosofía de archivo único; el gzip de GitHub Pages absorbe los ~19 KB extra. La URL fuente queda comentada en el HTML para futuras actualizaciones
+- [x] **CLS 0.201 → ~0**: el `x-cloak` de `<main>` ocultaba todo el contenido con `display: none` hasta que Alpine arrancaba y el footer saltaba ~1300px. Ahora `main[x-cloak]` usa `visibility: hidden` con `display: block`, reservando el espacio
+- [x] Verificado con Playwright: variables de Pico/Open Props resueltas, cero stylesheets de jsDelivr, motor de cálculo intacto (caso de referencia Beto → Ana $50), axe-core 0 violaciones
+- [x] Lighthouse contra producción tras el deploy (evidencia abajo)
+
 ---
 
 ## Uso local
